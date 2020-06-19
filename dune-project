@@ -2,6 +2,8 @@
 (name "isla-lang")
 (authors "Peter Sewell" "Thibaut Pérami")
 (maintainers "Thibaut Pérami <thibaut.perami@cl.cam.ac.uk>")
+(source (github rems-project/isla-lang))
+
 (using fmt 1.2)
 (using menhir 2.0)
 
@@ -10,5 +12,5 @@
 (package
  (name isla-lang)
  (synopsis "Library for parsing the output of isla")
- (depends (pprint (>= 20171003)) (menhir :build))
+ (depends (pprint (>= 20171003)) (menhir :build) (ott (and (>= 0.31) :build)))
 )

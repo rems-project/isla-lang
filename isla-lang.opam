@@ -3,10 +3,13 @@ opam-version: "2.0"
 synopsis: "Library for parsing the output of isla"
 maintainer: ["Thibaut Pérami <thibaut.perami@cl.cam.ac.uk>"]
 authors: ["Peter Sewell" "Thibaut Pérami"]
+homepage: "https://github.com/rems-project/isla-lang"
+bug-reports: "https://github.com/rems-project/isla-lang/issues"
 depends: [
   "dune" {>= "1.11"}
   "pprint" {>= "20171003"}
   "menhir" {build}
+  "ott" {>= "0.31" & build}
 ]
 build: [
   ["dune" "subst"] {pinned}
@@ -22,3 +25,4 @@ build: [
     "@doc" {with-doc}
   ]
 ]
+dev-repo: "git+https://github.com/rems-project/isla-lang.git"
