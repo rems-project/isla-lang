@@ -8,7 +8,7 @@
  (public_name isla-lang)
  (libraries pprint)
  (modules
-  (:standard \ main dirname)))
+  (:standard \ main bin2share)))
 
 (executable
  (name main)
@@ -27,22 +27,25 @@
     isla_lang_ast.ml -o isla_lang.v)))
 
 (rule
- (target dirname.ml)
+ (target bin2share.ml)
  (action
-  (write-file dirname.ml "read_line () |> Filename.dirname |> print_string;;")))
+  (write-file bin2share.ml
+              "(Sys.argv.(1) |> Filename.dirname |> Filename.dirname) ^ Sys.argv.(2) |> print_string;;")))
 
 (rule
  (target ott.path)
- (deps dirname.ml)
+ (deps bin2share.ml)
  (action
-  (with-stdout-to
-   ott.path
-   (system "echo %{bin:ott} | ocaml dirname.ml | ocaml dirname.ml"))))
+  (ignore-stderr
+   (with-stdout-to
+     ott.path
+    (system "opam var ott:share || ocaml bin2share.ml %{bin:ott} /share/ott")))))
 
 (rule
  (target ottlib.mly)
  (action
-  (copy "%{read:ott.path}/share/ott/menhir_library_extra.mly" ottlib.mly)))
+  (copy "%{read-lines:ott.path}/menhir_library_extra.mly" ottlib.mly)))
+
 
 (menhir
  (modules isla_lang_parser ottlib)
