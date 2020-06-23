@@ -5,7 +5,16 @@ instruction-semantics description output by isla. It uses
 [ott](https://github.com/ott-lang/ott) to generate those from `isla_lang.ott`.
 You can get it on `opam`.
 
+## Install with OPAM (released version)
+
 Direct install with `opam`: `opam install .`.
+
+## Install with OPAM (github checkout)
+
+In the checkout directory, run `opam pin add isla-lang .`.
+
+To rebuild and reinstall after local changes, run `opam upgrade --working-dir isla-lang`  (or `opam upgrade -w isla-lang`).
+
 
 ## Details
 
