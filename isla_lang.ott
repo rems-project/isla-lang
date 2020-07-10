@@ -213,7 +213,6 @@ bvcomp :: '' ::=
 % Operations that must be applied to exactly two elements
 binop :: '' ::=
   | =                                   :: :: Eq
-  | neq                                 :: :: Neq
   | bvarith                             :: :: Bvarith
   | bvcomp                              :: :: Bvcomp
 
