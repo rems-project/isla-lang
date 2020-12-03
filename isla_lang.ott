@@ -302,6 +302,10 @@ accessor_list :: '' ::=
   | nil                                                                         :: :: Nil
   | ( accessor1 .. accessork )                                                  :: :: Cons
 
+valu_option :: '' ::= {{ ocaml valu option }}
+  | None                                                                        :: :: None
+  | Some valu                                                                   :: :: Some
+
 % The matching data type is `Event` in `isla-lib/src/smt.rs`
 % The order of constructors should match the one of the `Event` definition.
 % The pretty printing function that need to be parsed by this is
@@ -311,13 +315,10 @@ event :: '' ::=  {{ aux _ annot }} {{auxparam 'a }}
   |  ( branch int str )                                                         :: :: Branch
   |  ( read-reg name accessor_list valu )                                       :: :: ReadReg
   |  ( write-reg name accessor_list valu )                                      :: :: WriteReg
-   % ( read_mem result kind  addr   size)
-  |  ( read-mem valu   valu' valu'' int )                                       :: :: ReadMem
-   % ( write_mem success kind  addr  data   size )
-  |  ( write-mem vvar    valu  valu' valu'' int' )                              :: :: WriteMem
+  |  ( read-mem valu   valu' valu'' int valu_option )                           :: :: ReadMem
+  |  ( write-mem vvar    valu  valu' valu'' int' valu_option )                  :: :: WriteMem
   |  ( branch-address valu )                                                    :: :: BranchAddress
   |  ( barrier valu )                                                           :: :: Barrier
-   % ( cache-op kind addr )
   |  ( cache-op valu valu' )                                                    :: :: CacheOp
   |  ( mark-reg name str )                                                      :: :: MarkReg
   |  ( cycle )                                                                  :: :: Cycle
