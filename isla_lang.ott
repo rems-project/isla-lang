@@ -8,6 +8,7 @@
 embed {{ coq
 
 Require Import String.
+Require Import ZArith.
 
 Inductive isla_var : Type :=
 | Mk_isla_var : nat -> isla_var.
@@ -71,7 +72,7 @@ metavar enum ::=    {{ ocaml int * int }}
 
 % Just a plain integer
 metavar int ::=     {{ ocaml int }}
-                    {{ coq int }}
+                    {{ coq Z }}
                     {{ phantom }}
                     {{ lex numeric }}
                     {{ ocamllex ['0'-'9']+ }}
@@ -82,7 +83,7 @@ metavar int ::=     {{ ocaml int }}
 
 % integer bitvectors. "bv-24" is the bitvector that represents 24  (the bitvector size comes from the type of the expression; it's not part of the value)
 metavar bvi ::=     {{ ocaml int }}
-                    {{ coq int }}
+                    {{ coq Z }}
                     {{ phantom }}
                     {{ lex numeric }}
                     {{ ocamllex ('b''v''-'?['0'-'9']+) }}
