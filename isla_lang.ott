@@ -155,6 +155,7 @@ ty :: 'Ty_' ::=
   | Bool                                :: :: Bool
   | (_ BitVec int )                     :: :: BitVec
   | enum_ty                             :: :: Enum
+  | ( Array ty1 ty2 )                   :: :: Array
 
 
 %%%%% bool %%%%%
