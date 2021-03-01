@@ -81,20 +81,6 @@ Inductive binop : Set :=
  | Bvarith (bvarith5:bvarith)
  | Bvcomp (bvcomp5:bvcomp).
 
-Inductive valu : Set := 
- | Val_Symbolic (vvar5:isla_var)
- | Val_Bool (bool5:bool)
- | Val_I (bvi5:Z) (int5:Z)
- | Val_Bits (bv5:string)
- | Val_Enum (enum5:enum)
- | Val_String (str5:string)
- | Val_Unit : valu
- | Val_NamedUnit (name5:register_name)
- | Val_Vector (_:list valu)
- | Val_List (_:list valu)
- | Val_Struct (_:list register_name * valu)
- | Val_Poison : valu.
-
 Inductive accessor : Set := 
  | Field (name5:register_name).
 
@@ -114,7 +100,19 @@ Inductive exp : Set :=
  | Manyop (manyop5:manyop) (_:list exp) (annot5:unit)
  | Ite (exp1:exp) (exp2:exp) (exp3:exp) (annot5:unit).
 
-Definition valu_option : Set := option valu.
+Inductive valu : Set := 
+ | Val_Symbolic (vvar5:isla_var)
+ | Val_Bool (bool5:bool)
+ | Val_I (bvi5:Z) (int5:Z)
+ | Val_Bits (bv5:string)
+ | Val_Enum (enum5:enum)
+ | Val_String (str5:string)
+ | Val_Unit : valu
+ | Val_NamedUnit (name5:register_name)
+ | Val_Vector (_:list valu)
+ | Val_List (_:list valu)
+ | Val_Struct (_:list register_name * valu)
+ | Val_Poison : valu.
 
 Inductive accessor_list : Set := 
  | Nil : accessor_list
@@ -126,13 +124,15 @@ Inductive smt : Set :=
  | Assert (exp5:exp)
  | DefineEnum (int5:Z).
 
+Definition valu_option : Set := option valu.
+
 Inductive event : Set := 
  | Smt (smt5:smt) (annot5:unit)
  | Branch (int5:Z) (str5:string) (annot5:unit) (*r Sail trace fork *)
  | ReadReg (name5:register_name) (accessor_list5:accessor_list) (valu5:valu) (annot5:unit) (*r read register *)
  | WriteReg (name5:register_name) (accessor_list5:accessor_list) (valu5:valu) (annot5:unit) (*r write register *)
- | ReadMem (valu5:valu) (rkind:valu) (addr:valu) (nat5:nat) (tag_value:valu_option) (annot5:unit) (*r read memory *)
- | WriteMem (vvar5:isla_var) (wkind:valu) (addr:valu) (data:valu) (nat5:nat) (tag_value:valu_option) (annot5:unit) (*r write memory *)
+ | ReadMem (valu5:valu) (rkind:valu) (addr:valu) (num_bytes:nat) (tag_value:valu_option) (annot5:unit) (*r read memory *)
+ | WriteMem (vvar5:isla_var) (wkind:valu) (addr:valu) (data:valu) (num_bytes:nat) (tag_value:valu_option) (annot5:unit) (*r write memory *)
  | BranchAddress (addr:valu) (annot5:unit) (*r announce branch address, to induce ctrl dependency in concurrency model *)
  | Barrier (bkind:valu) (annot5:unit) (*r memory barrier *)
  | CacheOp (ckind:valu) (addr:valu) (annot5:unit) (*r cache maintenance effect, for data-cache clean etc. *)
@@ -143,8 +143,30 @@ Inductive event : Set :=
  | WakeRequest (annot5:unit) (*r Arm wake request *)
  | SleepRequest (annot5:unit) (*r Arm sleep request *).
 
+Inductive valu_concrete : Set := 
+ | CVal_Bool (bool5:bool)
+ | CVal_I (bvi5:Z) (int5:Z)
+ | CVal_Bits (bv5:string)
+ | CVal_Enum (enum5:enum)
+ | CVal_String (str5:string)
+ | CVal_Unit : valu_concrete
+ | CVal_NamedUnit (name5:register_name)
+ | CVal_Vector (_:list valu)
+ | CVal_List (_:list valu)
+ | CVal_Struct (_:list register_name * valu)
+ | CVal_Poison : valu_concrete.
+
 Inductive trc : Set := 
  | Trace (_:list event).
+
+Inductive exp_val : Set := 
+ | EV_Bits (bv5:string) (annot5:unit)
+ | EV_Bool (bool5:bool) (annot5:unit)
+ | EV_Enum (enum5:enum) (annot5:unit)
+ | EV_Unop (unop5:unop) (exp_val5:exp_val) (annot5:unit)
+ | EV_Binop (binop5:binop) (exp_val1:exp_val) (exp_val2:exp_val) (annot5:unit)
+ | EV_Manyop (manyop5:manyop) (_:list exp_val) (annot5:unit)
+ | EV_Ite (exp_val1:exp_val) (exp_val2:exp_val) (exp_val3:exp_val) (annot5:unit).
 (** induction principles *)
 Section exp_rect.
 
@@ -177,5 +199,36 @@ Fixpoint exp_ott_ind (n:exp) : P_exp n :=
 end.
 
 End exp_rect.
+
+
+Section exp_val_rect.
+
+Variables
+  (P_list_exp_val : list exp_val -> Prop)
+  (P_exp_val : exp_val -> Prop).
+
+Hypothesis
+  (H_EV_Bits : forall (bv5:string), forall (annot5:unit), P_exp_val (EV_Bits bv5 annot5))
+  (H_EV_Bool : forall (bool5:bool), forall (annot5:unit), P_exp_val (EV_Bool bool5 annot5))
+  (H_EV_Enum : forall (enum5:enum), forall (annot5:unit), P_exp_val (EV_Enum enum5 annot5))
+  (H_EV_Unop : forall (unop5:unop), forall (exp_val5:exp_val), P_exp_val exp_val5 -> forall (annot5:unit), P_exp_val (EV_Unop unop5 exp_val5 annot5))
+  (H_EV_Binop : forall (binop5:binop), forall (exp_val1:exp_val), P_exp_val exp_val1 -> forall (exp_val2:exp_val), P_exp_val exp_val2 -> forall (annot5:unit), P_exp_val (EV_Binop binop5 exp_val1 exp_val2 annot5))
+  (H_EV_Manyop : forall (exp_val_list:list exp_val), P_list_exp_val exp_val_list -> forall (manyop5:manyop), forall (annot5:unit), P_exp_val (EV_Manyop manyop5 exp_val_list annot5))
+  (H_EV_Ite : forall (exp_val1:exp_val), P_exp_val exp_val1 -> forall (exp_val2:exp_val), P_exp_val exp_val2 -> forall (exp_val3:exp_val), P_exp_val exp_val3 -> forall (annot5:unit), P_exp_val (EV_Ite exp_val1 exp_val2 exp_val3 annot5))
+  (H_list_exp_val_nil : P_list_exp_val nil)
+  (H_list_exp_val_cons : forall (exp_val0:exp_val), P_exp_val exp_val0 -> forall (exp_val_l:list exp_val), P_list_exp_val exp_val_l -> P_list_exp_val (cons exp_val0 exp_val_l)).
+
+Fixpoint exp_val_ott_ind (n:exp_val) : P_exp_val n :=
+  match n as x return P_exp_val x with
+  | (EV_Bits bv5 annot5) => H_EV_Bits bv5 annot5
+  | (EV_Bool bool5 annot5) => H_EV_Bool bool5 annot5
+  | (EV_Enum enum5 annot5) => H_EV_Enum enum5 annot5
+  | (EV_Unop unop5 exp_val5 annot5) => H_EV_Unop unop5 exp_val5 (exp_val_ott_ind exp_val5) annot5
+  | (EV_Binop binop5 exp_val1 exp_val2 annot5) => H_EV_Binop binop5 exp_val1 (exp_val_ott_ind exp_val1) exp_val2 (exp_val_ott_ind exp_val2) annot5
+  | (EV_Manyop manyop5 exp_val_list annot5) => H_EV_Manyop exp_val_list (((fix exp_val_list_ott_ind (exp_val_l:list exp_val) : P_list_exp_val exp_val_l := match exp_val_l as x return P_list_exp_val x with nil => H_list_exp_val_nil | cons exp_val1 xl => H_list_exp_val_cons exp_val1(exp_val_ott_ind exp_val1)xl (exp_val_list_ott_ind xl) end)) exp_val_list) manyop5 annot5
+  | (EV_Ite exp_val1 exp_val2 exp_val3 annot5) => H_EV_Ite exp_val1 (exp_val_ott_ind exp_val1) exp_val2 (exp_val_ott_ind exp_val2) exp_val3 (exp_val_ott_ind exp_val3) annot5
+end.
+
+End exp_val_rect.
 
 
