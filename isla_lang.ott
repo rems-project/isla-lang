@@ -321,6 +321,7 @@ smt :: '' ::= {{auxparam 'a }}
 % Those can contain value of type that can't appears in expressions like unit
 % or string.
 
+%%% TODO: JP: these are *patterns* ==> rename to avoid utter confusion?
 grammar
 valu, addr, data, rkind, wkind, bkind, ckind, opcode :: 'Val_' ::=
  | vvar                                 :: :: Symbolic
@@ -346,10 +347,11 @@ selem :: '' ::=                         {{ phantom }}
                                                        pp_raw_name n ^^ !^"," ^^ pp_raw_valu v }}
  | ( name valu )                        :: :: Struct_elem {{ ocaml (name,valu) }} {{ coq (name,valu) }}
 
-
+%%% TODO: JP: Ideally, (1) remove the values that don't occur (struct, etc.)
+%%% TODO: JP: (2) add a `Val` ctor to `exp`, and
+%%% TODO: JP: (3) remove redundant `exp` constructors
 grammar
 valu_concrete :: 'CVal_' ::=
-% | vvar                                 :: :: Symbolic
  | bool                                 :: :: Bool
  | (_ bvi int )                         :: :: I
  | bv                                   :: :: Bits
