@@ -71,7 +71,7 @@ metavar enum ::=    {{ ocaml int * int }}
 
 
 % Just a plain natural
-metavar nat ::=     {{ ocaml int }}
+metavar nat, num_bytes ::=     {{ ocaml int }}
                     {{ coq nat }}
                     {{ phantom }}
                     {{ lex numeric }}
@@ -86,7 +86,7 @@ metavar int ::=     {{ ocaml int }}
                     {{ coq Z }}
                     {{ phantom }}
                     {{ lex numeric }}
-                    {{ ocamllex ['0'-'9']+ }}
+                    {{ ocamllex '-'?['0'-'9']+ }}
                     {{ ocamllex-of-string int_of_string }}
                     {{ pp x = string (string_of_int x) }}
                     {{ pp-raw x = string (string_of_int x) }}
@@ -323,6 +323,39 @@ selem :: '' ::=                         {{ phantom }}
                                                        pp_raw_name n ^^ !^"," ^^ pp_raw_valu v }}
  | ( name valu )                        :: :: Struct_elem {{ ocaml (name,valu) }} {{ coq (name,valu) }}
 
+
+grammar
+valu_concrete :: 'CVal_' ::=
+% | vvar                                 :: :: Symbolic
+ | bool                                 :: :: Bool
+ | (_ bvi int )                         :: :: I
+ | bv                                   :: :: Bits
+ | enum                                 :: :: Enum
+ | str                                  :: :: String
+ | (_ unit )                            :: :: Unit
+ | ( name (_ unit))                     :: :: NamedUnit
+ | (_ vec valu1  ..  valuk  )           :: :: Vector  % TODO: fix syntax
+ | (_ list valu1 .. valuk )             :: :: List  % TODO: fix syntax
+ | (_ struct  selem1 .. selemk )        :: :: Struct  
+ | (_ poison )                           :: :: Poison
+
+
+grammar
+% structure element constructor: pair of field name and value
+selem_concrete :: 'C_' ::=                         {{ phantom }}
+                                        {{ ocaml string * valu_concrete }}
+					{{ coq register_name * valu }}
+                                        {{ pp se = let (n,v) = se in
+                                                   parens (pp_name n ^^ blank 1 ^^ pp_valu_concrete v) }}
+                                        {{ pp-raw se = let (n,v) = se in
+                                                       pp_raw_name n ^^ !^"," ^^ pp_raw_valu_concrete v }}
+ | ( name valu_concrete )                        :: :: Struct_elem {{ ocaml (name,valu_concrete) }} {{ coq (name,valu) }}
+
+%subrules
+%valu_concrete <:: valu
+%selem_concrete <:: selem
+
+
 %%%%% events %%%%%
 grammar
 
@@ -348,8 +381,8 @@ event :: '' ::=  {{ aux _ annot }} {{auxparam 'a }}
   |  ( branch int str )                                                         :: :: Branch  {{ com Sail trace fork }}
   |  ( read-reg name accessor_list valu )                                       :: :: ReadReg {{ com read register }}
   |  ( write-reg name accessor_list valu )                                      :: :: WriteReg {{ com write register }}
-  |  ( read-mem valu rkind addr nat tag_value )                                 :: :: ReadMem {{ com read memory }}
-  |  ( write-mem vvar wkind addr data nat tag_value )                           :: :: WriteMem {{ com write memory }}
+  |  ( read-mem valu rkind addr num_bytes tag_value )                                 :: :: ReadMem {{ com read memory }}
+  |  ( write-mem vvar wkind addr data num_bytes tag_value )                           :: :: WriteMem {{ com write memory }}
   |  ( branch-address addr )                                                    :: :: BranchAddress {{ com announce branch address, to induce ctrl dependency in concurrency model }}
   |  ( barrier bkind )                                                          :: :: Barrier {{ com memory barrier }}
   |  ( cache-op ckind addr )                                                    :: :: CacheOp {{ com cache maintenance effect, for data-cache clean etc. }}
