@@ -322,6 +322,7 @@ smt :: '' ::= {{auxparam 'a }}
 % Those can contain value of type that can't appears in expressions like unit
 % or string.
 
+%%% TODO: JP: these are *patterns* ==> rename to avoid utter confusion?
 grammar
 valu, addr, data, rkind, wkind, bkind, ckind, opcode :: 'Val_' ::=
  | vvar                                 :: :: Symbolic
@@ -347,10 +348,11 @@ selem :: '' ::=                         {{ phantom }}
                                                        pp_raw_name n ^^ !^"," ^^ pp_raw_valu v }}
  | ( name valu )                        :: :: Struct_elem {{ ocaml (name,valu) }} {{ coq (name,valu) }}
 
-
+%%% TODO: JP: Ideally, (1) remove the values that don't occur (struct, etc.)
+%%% TODO: JP: (2) add a `Val` ctor to `exp`, and
+%%% TODO: JP: (3) remove redundant `exp` constructors
 grammar
 valu_concrete :: 'CVal_' ::=
-% | vvar                                 :: :: Symbolic
  | bool                                 :: :: Bool
  | (_ bvi int )                         :: :: I
  | bv                                   :: :: Bits
@@ -403,16 +405,16 @@ valu_option, tag_value :: '' ::= {{ ocaml valu option }} {{ coq option valu }}
 event :: '' ::=  {{ aux _ annot }} {{auxparam 'a }}
   |  smt                                                                        :: :: Smt
   |  ( branch int str )                                                         :: :: Branch  {{ com Sail trace fork }}
-  |  ( read-reg name accessor_list valu )                                       :: :: ReadReg {{ com read register }}
-  |  ( write-reg name accessor_list valu )                                      :: :: WriteReg {{ com write register }}
-  |  ( read-mem valu rkind addr num_bytes tag_value )                                 :: :: ReadMem {{ com read memory }}
-  |  ( write-mem vvar wkind addr data num_bytes tag_value )                           :: :: WriteMem {{ com write memory }}
-  |  ( branch-address addr )                                                    :: :: BranchAddress {{ com announce branch address, to induce ctrl dependency in concurrency model }}
-  |  ( barrier bkind )                                                          :: :: Barrier {{ com memory barrier }}
-  |  ( cache-op ckind addr )                                                    :: :: CacheOp {{ com cache maintenance effect, for data-cache clean etc. }}
+  |  ( read-reg name accessor_list valu )                                       :: :: ReadReg {{ com read value `valu` from register `name` }}
+  |  ( write-reg name accessor_list valu )                                      :: :: WriteReg {{ com write value `valu` to register `name` }}
+  |  ( read-mem valu rkind addr num_bytes tag_value )                                 :: :: ReadMem {{ com read value `valu` from memory address `addr`, with read kind `rkind`, byte width `byte_width`, and `tag_value` is the optional capability tag }}
+  |  ( write-mem vvar wkind addr data num_bytes tag_value )                           :: :: WriteMem {{ com write value `valu` to memory address `addr`, with write kind `wkind`, byte width `byte_width`, `tag_value` is the optional capability tag, and success flag `vvar` }}
+  |  ( branch-address addr )                                                    :: :: BranchAddress {{ com announce branch address `addr`, to induce ctrl dependency in the concurrency model }}
+  |  ( barrier bkind )                                                          :: :: Barrier {{ com memory barrier of kind `bkind` }}
+  |  ( cache-op ckind addr )                                                    :: :: CacheOp {{ com cache maintenance effect of kind `ckind`, at address `addr`, for data-cache clean etc. }}
   |  ( mark-reg name str )                                                      :: :: MarkReg {{ com instrumentation to tell concurrency model to ignore certain dependencies (TODO: support marking multiple registers). Currently the str is ignore-edge or ignore-write }}
   |  ( cycle )                                                                  :: :: Cycle {{ com instruction boundary }}
-  |  ( instr opcode )                                                           :: :: Instr {{ com records the instruction opcode that was fetched }}
+  |  ( instr opcode )                                                           :: :: Instr {{ com records the instruction `opcode` that was fetched }}
 % we're not yet handling the semantics of sleeping etc. 
   |  ( sleeping vvar )                                                          :: :: Sleeping {{ com Arm sleeping predicate }} 
   |  ( wake-request )                                                           :: :: WakeRequest {{ com Arm wake request }} 
