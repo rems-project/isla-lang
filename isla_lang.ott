@@ -279,6 +279,29 @@ exp :: '' ::=                           {{ aux _ annot }}
   | ( ite exp1 exp2 exp3 )              :: :: Ite
 
 
+exp_val :: 'EV_' ::=                    {{ aux _ annot }}
+                                        {{ auxparam 'a }}
+%                                        {{ menhir-start }}
+%                                        {{ menhir-start-type (Isla_lang_ast.lrng) Isla_lang_ast.exp }}
+%  | vvar                                :: :: Var
+  | bv                                  :: :: Bits
+  | bool                                :: :: Bool
+  | enum                                :: :: Enum
+  | ( unop exp_val )                        :: :: Unop
+  | ( binop exp_val1 exp_val2 )                 :: :: Binop
+  | ( manyop exp_val1 .. exp_valj )             :: :: Manyop
+  | ( ite exp_val1 exp_val2 exp_val3 )              :: :: Ite
+
+%subrules
+%exp_val <:: exp
+%
+%substitutions
+%single exp vvar :: subst_exp
+
+
+
+
+
 %%%%% smt %%%%%
 grammar
 smt :: '' ::= {{auxparam 'a }}
