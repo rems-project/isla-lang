@@ -70,19 +70,20 @@ metavar enum ::=    {{ ocaml int * int }}
                     {{ pp x = let (a,b) = x in !^(Printf.sprintf "e%d_%d" a b) }}
 
 
-% Just a plain natural
-metavar nat, num_bytes ::=     {{ ocaml int }}
-                    {{ coq nat }}
-                    {{ phantom }}
-                    {{ lex numeric }}
-                    {{ ocamllex ['0'-'9']+ }}
-                    {{ ocamllex-of-string int_of_string }}
-                    {{ pp x = string (string_of_int x) }}
-                    {{ pp-raw x = string (string_of_int x) }}
+% % Just a plain natural - not currently distinguished from int because the
+% lexing of traces goes wrong
+% metavar nat, num_bytes ::=     {{ ocaml int }}
+%                     {{ coq nat }}
+%                     {{ phantom }}
+%                     {{ lex numeric }}
+%                     {{ ocamllex ['0'-'9']+ }}
+%                     {{ ocamllex-of-string int_of_string }}
+%                     {{ pp x = string (string_of_int x) }}
+%                     {{ pp-raw x = string (string_of_int x) }}
 
 
 % Just a plain integer
-metavar int ::=     {{ ocaml int }}
+metavar int, num_bytes ::=     {{ ocaml int }}
                     {{ coq Z }}
                     {{ phantom }}
                     {{ lex numeric }}
