@@ -10,11 +10,9 @@ embed {{ coq
 Require Import String.
 Require Import ZArith.
 
-Inductive isla_var : Type :=
-| Mk_isla_var : nat -> isla_var.
+Definition var_name : Set := Z.
 
-Inductive register_name : Type :=  (* register and field names *)
-| Mk_register_name : string -> register_name.
+Definition register_name : Set := string.
 
 Inductive enum_id : Type :=
 | Mk_enum_id : nat -> enum_id.
@@ -30,7 +28,7 @@ Inductive annot : Type :=
 
 % SMT symbolic variables
 metavar vvar ::=    {{ ocaml int }}
-                    {{ coq isla_var }}
+                    {{ coq var_name }}
                     {{ phantom }}
                     {{ lex numeric }}
                     {{ ocamllex 'v'['0'-'9']+ }}
@@ -50,7 +48,7 @@ metavar name ::=    {{ ocaml string }}
                     {{ ocamllex-of-string (function s -> String.sub s 1 (String.length s -2)) }}
                     {{ pp x = !^(Printf.sprintf "|%s|" x) }}
 
-% enum type names of the form Enum  (can we later add the Sail string?)	
+% enum type names of the form Enum  (can we later add the Sail string?)
 metavar enum_ty ::= {{ ocaml int  }}
                     {{ coq enum_id }}
                     {{ phantom }}
@@ -60,7 +58,7 @@ metavar enum_ty ::= {{ ocaml int  }}
                     {{ pp-raw x = !^(Printf.sprintf "Enum(%d)" x) }}
                     {{ pp x = !^(Printf.sprintf "Enum%d" x) }}
 
-% enum names of the form en_m   (can we later add the Sail string?)	
+% enum names of the form en_m   (can we later add the Sail string?)
 metavar enum ::=    {{ ocaml int * int }}
                     {{ coq (enum_id*enum_ctor) }}
                     {{ lex alphanum }}
@@ -107,7 +105,7 @@ metavar bvi ::=     {{ ocaml int }}
 % for Coq, leave as string for now so see in Coq what you see in the
 % trace; later turn into whatever choice of bitvector repr type
 metavar bv ::=      {{ ocaml string }}
-                    {{ coq string }}  
+                    {{ coq string }}
                     {{ phantom }}
                     {{ lex numeric }}
                     {{ ocamllex ('#''b'['0'-'1']+)|('#''x'['0'-'9''a'-'f''A'-'F']+) }}
@@ -174,7 +172,7 @@ grammar
 % TODO handle pretty printing of annotations
 annot :: '' ::=                         {{ phantom }}
                                         {{ ocaml 'a }}
-                                        {{ coq unit }}
+                                        {{ coq annot }}
                                         {{ com Annotation }}
                                         {{ pp l = PPrint.empty }}
                                         {{ pp-raw l = PPrint.empty }}
@@ -335,7 +333,7 @@ valu, addr, data, rkind, wkind, bkind, ckind, opcode :: 'Val_' ::=
  | ( name (_ unit))                     :: :: NamedUnit
  | (_ vec valu1  ..  valuk  )           :: :: Vector  % TODO: fix syntax
  | (_ list valu1 .. valuk )             :: :: List  % TODO: fix syntax
- | (_ struct  selem1 .. selemk )        :: :: Struct  
+ | (_ struct  selem1 .. selemk )        :: :: Struct
  | (_ poison )                          :: :: Poison
 
 % structure element constructor: pair of field name and value
@@ -362,7 +360,7 @@ valu_concrete :: 'CVal_' ::=
  | ( name (_ unit))                     :: :: NamedUnit
  | (_ vec valu1  ..  valuk  )           :: :: Vector  % TODO: fix syntax
  | (_ list valu1 .. valuk )             :: :: List  % TODO: fix syntax
- | (_ struct  selem1 .. selemk )        :: :: Struct  
+ | (_ struct  selem1 .. selemk )        :: :: Struct
  | (_ poison )                           :: :: Poison
 
 
@@ -389,8 +387,8 @@ grammar
 accessor :: '' ::=
   | (_ field name )                                                             :: :: Field
 
-% TODO: change this to use lists explicitly in the event type, and change read-dwarf to match 
-accessor_list :: '' ::=
+% TODO: change this to use lists explicitly in the event type, and change read-dwarf to match
+accessor_list :: '' ::=  {{ coq list accessor }}
   | nil                                                                         :: :: Nil
   | ( accessor1 .. accessork )                                                  :: :: Cons
 
@@ -415,9 +413,9 @@ event :: '' ::=  {{ aux _ annot }} {{auxparam 'a }}
   |  ( mark-reg name str )                                                      :: :: MarkReg {{ com instrumentation to tell concurrency model to ignore certain dependencies (TODO: support marking multiple registers). Currently the str is ignore-edge or ignore-write }}
   |  ( cycle )                                                                  :: :: Cycle {{ com instruction boundary }}
   |  ( instr opcode )                                                           :: :: Instr {{ com records the instruction `opcode` that was fetched }}
-% we're not yet handling the semantics of sleeping etc. 
-  |  ( sleeping vvar )                                                          :: :: Sleeping {{ com Arm sleeping predicate }} 
-  |  ( wake-request )                                                           :: :: WakeRequest {{ com Arm wake request }} 
+% we're not yet handling the semantics of sleeping etc.
+  |  ( sleeping vvar )                                                          :: :: Sleeping {{ com Arm sleeping predicate }}
+  |  ( wake-request )                                                           :: :: WakeRequest {{ com Arm wake request }}
   |  ( sleep-request )                                                          :: :: SleepRequest {{ com Arm sleep request }}
 
 %%%%% traces %%%%%
@@ -427,4 +425,5 @@ grammar
 trc :: '' ::=                 {{ menhir-start }}
                               {{ auxparam 'a }}
                               {{ menhir-start-type Isla_lang_ast.lrng Isla_lang_ast.trc }}
+                              {{ coq list event }}
  | ( trace event1 .. eventj )                                                   :: :: Trace
