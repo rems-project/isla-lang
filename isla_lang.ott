@@ -286,10 +286,10 @@ exp_val :: 'EV_' ::=                    {{ aux _ annot }}
   | bv                                  :: :: Bits
   | bool                                :: :: Bool
   | enum                                :: :: Enum
-  | ( unop exp_val )                        :: :: Unop
-  | ( binop exp_val1 exp_val2 )                 :: :: Binop
-  | ( manyop exp_val1 .. exp_valj )             :: :: Manyop
-  | ( ite exp_val1 exp_val2 exp_val3 )              :: :: Ite
+%  | ( unop exp_val )                        :: :: Unop
+%  | ( binop exp_val1 exp_val2 )                 :: :: Binop
+%  | ( manyop exp_val1 .. exp_valj )             :: :: Manyop
+%  | ( ite exp_val1 exp_val2 exp_val3 )              :: :: Ite
 
 %subrules
 %exp_val <:: exp
