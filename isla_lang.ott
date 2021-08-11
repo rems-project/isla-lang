@@ -431,5 +431,5 @@ trc :: '' ::=                 {{ menhir-start }}
 trcs :: '' ::=                {{ menhir-start }}
                               {{ auxparam 'a }}
                               {{ menhir-start-type Isla_lang_ast.lrng Isla_lang_ast.trcs }}
-                              {{ coq list trc }}
+                              {{ coq list (list event) }}
  | trc1 .. trck                                                                 :: :: Traces
