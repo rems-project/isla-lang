@@ -29,13 +29,13 @@ let _ =
 let process linebuf =
   (* Run the generated lexer and parser on this input *)
   try
-    let t = Parser.trc_start Lexer.token linebuf in
+    let t = Parser.trcs_start Lexer.token linebuf in
     (* Show the generated raw and "pretty" pp of the result *)
     Printf.printf "   ";
-    PPrintEngine.ToChannel.compact stdout (PP.pp_raw_trc t);
+    PPrintEngine.ToChannel.compact stdout (PP.pp_raw_trcs t);
     Printf.printf "\n";
     Printf.printf "   ";
-    PPrintEngine.ToChannel.compact stdout (PP.pp_trc t);
+    PPrintEngine.ToChannel.compact stdout (PP.pp_trcs t);
     Printf.printf "\n"
   with
   | Lexer.Error msg -> Printf.fprintf stdout "%s" msg
