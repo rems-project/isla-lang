@@ -11,6 +11,7 @@ Require Import String.
 Require Import ZArith.
 
 Definition var_name : Set := Z.
+Definition eq_var_name (v w : var_name) : bool := Z.eqb v w.
 
 Definition register_name : Set := string.
 
@@ -272,22 +273,26 @@ manyop :: '' ::=
   | concat                              :: :: Concat
 
 
+% Base symbolic values that can appear in both SMT expressions and register values
+grammar
+base_val :: 'Val_' ::=
+ | vvar                                 :: :: Symbolic
+ | bool                                 :: :: Bool
+ | bv                                   :: :: Bits
+ | enum                                 :: :: Enum
+
 %%%%% exp %%%%%
 grammar
 exp :: '' ::=                           {{ aux _ annot }}
                                         {{ auxparam 'a }}
                                         {{ menhir-start }}
                                         {{ menhir-start-type (Isla_lang_ast.lrng) Isla_lang_ast.exp }}
-  | valu                                :: :: Val
+  | base_val                            :: :: Val
   | ( unop exp )                        :: :: Unop
   | ( binop exp1 exp2 )                 :: :: Binop
   | ( manyop exp1 .. expj )             :: :: Manyop
   | ( ite exp1 exp2 exp3 )              :: :: Ite
 
-
-%
-%substitutions
-%single exp vvar :: subst_exp
 
 
 
@@ -314,12 +319,9 @@ smt :: '' ::= {{auxparam 'a }}
 
 %%% TODO: JP: these are *patterns* ==> rename to avoid utter confusion?
 grammar
-valu, addr, data, rkind, wkind, bkind, ckind, opcode :: 'Val_' ::=
- | vvar                                 :: :: Symbolic
- | bool                                 :: :: Bool
+valu, addr, data, rkind, wkind, bkind, ckind, opcode :: 'RegVal_' ::=
+ | base_val                             :: :: Base
  | (_ bvi int )                         :: :: I
- | bv                                   :: :: Bits
- | enum                                 :: :: Enum
  | str                                  :: :: String
  | (_ unit )                            :: :: Unit
  | ( name (_ unit))                     :: :: NamedUnit
@@ -393,3 +395,14 @@ trcs :: '' ::=                {{ menhir-start }}
                               {{ menhir-start-type Isla_lang_ast.lrng Isla_lang_ast.trcs }}
                               {{ coq list (list event) }}
  | trc1 .. trck                                                                 :: :: Traces
+
+substitutions
+single base_val vvar :: subst_val
+
+embed
+{{ coq
+
+Coercion RegVal_Base : base_val >-> valu.
+Definition base_val_to_exp (v : base_val) : exp := Val v Mk_annot.
+Coercion base_val_to_exp : base_val >-> exp.
+}}
