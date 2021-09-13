@@ -259,6 +259,7 @@ manyop :: '' ::=
   | bvmanyarith                         :: :: Bvmanyarith
   | concat                              :: :: Concat
 
+%%%%% base_val %%%%%
 
 % Base symbolic values that can appear in both SMT expressions and register values
 grammar
