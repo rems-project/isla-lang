@@ -68,29 +68,6 @@ metavar enum ::=    {{ ocaml int * int }}
                     {{ pp-raw x = let (a,b) = x in !^(Printf.sprintf "%d/%d" b a) }}
                     {{ pp x = let (a,b) = x in !^(Printf.sprintf "e%d_%d" a b) }}
 
-
-% % Just a plain natural - not currently distinguished from int because the
-% lexing of traces goes wrong
-% metavar nat ::=     {{ ocaml int }}
-%                     {{ coq nat }}
-%                     {{ phantom }}
-%                     {{ lex numeric }}
-%                     {{ ocamllex ['0'-'9']+ }}
-%                     {{ ocamllex-of-string int_of_string }}
-%                     {{ pp x = string (string_of_int x) }}
-%                     {{ pp-raw x = string (string_of_int x) }}
-
-
-% Just a plain integer
-metavar int ::=     {{ ocaml int }}
-                    {{ coq Z }}
-                    {{ phantom }}
-                    {{ lex numeric }}
-                    {{ ocamllex '-'?['0'-'9']+ }}
-                    {{ ocamllex-of-string int_of_string }}
-                    {{ pp x = string (string_of_int x) }}
-                    {{ pp-raw x = string (string_of_int x) }}
-
 % natural numbers
 metavar nat, num_bytes ::=     {{ ocaml int }}
                     {{ coq N }}
@@ -188,6 +165,16 @@ annot :: '' ::=                         {{ phantom }}
                                         {{ pp l = PPrint.empty }}
                                         {{ pp-raw l = PPrint.empty }}
 
+%%%%% integers %%%%%
+% Use a rule because the lexer will not be able to distinguish between nat and int
+
+grammar
+int :: '' ::=                           {{ ocaml int }} {{ coq Z }}
+                                        {{ phantom }}
+                                        {{ pp i = string (string_of_int i) }}
+                                        {{ pp-raw i = string (string_of_int i) }}
+    | nat                               :: :: pos {{ ocaml [[nat]] }} {{ coq Z.of_N [[nat]] }}
+    | - nat                             :: :: neg {{ ocaml - [[nat]] }} {{ coq Z.opp (Z.of_N [[nat]] }}
 
 %%%%% types %%%%%
 grammar
