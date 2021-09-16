@@ -6,9 +6,18 @@
 
 
 embed {{ coq
-
+(*REAL_START*)
+Require Import List.
 Require Import String.
 Require Import ZArith.
+
+Module Type BV.
+  Parameter bvn : Set.
+End BV.
+
+Module IslaLangF (b : BV).
+
+Definition bvn := b.bvn.
 
 Definition var_name : Set := Z.
 Definition eq_var_name (v w : var_name) : bool := Z.eqb v w.
@@ -393,4 +402,21 @@ embed
 Coercion RegVal_Base : base_val >-> valu.
 Definition base_val_to_exp (v : base_val) : exp := Val v Mk_annot.
 Coercion base_val_to_exp : base_val >-> exp.
+
+End IslaLangF.
+
+(* Example usage:
+
+Module IslaBV : BV with Definition bvn := Z.
+  Definition bvn : Set := Z.
+End IslaBV.
+
+Module IslaLang := IslaLangF IslaBV.
+
+Export IslaLang.
+
+Goal bvn = Z.
+Proof. reflexivity. Qed.
+
+*)
 }}

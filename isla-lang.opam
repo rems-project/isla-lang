@@ -6,13 +6,15 @@ authors: ["Peter Sewell" "Thibaut Pérami"]
 homepage: "https://github.com/rems-project/isla-lang"
 bug-reports: "https://github.com/rems-project/isla-lang/issues"
 depends: [
-  "dune" {>= "1.11"}
+  "dune" {>= "2.7"}
   "pprint" {>= "20171003"}
   "menhir" {build}
+  "coq" {>= "8.13.2"}
   "ott" {>= "0.31" & build}
+  "odoc" {with-doc}
 ]
 build: [
-  ["dune" "subst"] {pinned}
+  ["dune" "subst"] {dev}
   [
     "dune"
     "build"
