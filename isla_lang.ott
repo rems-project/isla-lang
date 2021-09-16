@@ -6,9 +6,8 @@
 
 
 embed {{ coq
-
-Require Import String.
-Require Import ZArith.
+(*REAL_START*)
+From isla Require Export base bitvector.
 
 Definition var_name : Set := Z.
 Definition eq_var_name (v w : var_name) : bool := Z.eqb v w.
@@ -355,8 +354,8 @@ event :: '' ::=  {{ aux _ annot }} {{auxparam 'a }}
   |  ( branch int str )                                                         :: :: Branch  {{ com Sail trace fork }}
   |  ( read-reg name accessor_list valu )                                       :: :: ReadReg {{ com read value `valu` from register `name` }}
   |  ( write-reg name accessor_list valu )                                      :: :: WriteReg {{ com write value `valu` to register `name` }}
-  |  ( read-mem valu rkind addr num_bytes tag_value )                                 :: :: ReadMem {{ com read value `valu` from memory address `addr`, with read kind `rkind`, byte width `byte_width`, and `tag_value` is the optional capability tag }}
-  |  ( write-mem valu wkind addr data num_bytes tag_value )                           :: :: WriteMem {{ com write value `valu` to memory address `addr`, with write kind `wkind`, byte width `byte_width`, `tag_value` is the optional capability tag, and success flag `vvar` }}
+  |  ( read-mem valu rkind addr num_bytes tag_value )                                 :: :: ReadMem {{ com read value `valu` from memory address `addr`, with read kind `rkind`, byte width `byte\_width`, and `tag\_value` is the optional capability tag }}
+  |  ( write-mem valu wkind addr data num_bytes tag_value )                           :: :: WriteMem {{ com write value `valu` to memory address `addr`, with write kind `wkind`, byte width `byte\_width`, `tag\_value` is the optional capability tag, and success flag `vvar` }}
   |  ( branch-address addr )                                                    :: :: BranchAddress {{ com announce branch address `addr`, to induce ctrl dependency in the concurrency model }}
   |  ( barrier bkind )                                                          :: :: Barrier {{ com memory barrier of kind `bkind` }}
   |  ( cache-op ckind addr )                                                    :: :: CacheOp {{ com cache maintenance effect of kind `ckind`, at address `addr`, for data-cache clean etc. }}
@@ -393,4 +392,5 @@ embed
 Coercion RegVal_Base : base_val >-> valu.
 Definition base_val_to_exp (v : base_val) : exp := Val v Mk_annot.
 Coercion base_val_to_exp : base_val >-> exp.
+
 }}
