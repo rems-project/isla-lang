@@ -17,7 +17,7 @@ End BV.
 
 Module IslaLangF (b : BV).
 
-Definition bvn := b.bvn.
+Export b.
 
 Definition var_name : Set := Z.
 Definition eq_var_name (v w : var_name) : bool := Z.eqb v w.
@@ -407,16 +407,24 @@ End IslaLangF.
 
 (* Example usage:
 
-Module IslaBV : BV with Definition bvn := Z.
-  Definition bvn : Set := Z.
+(** *** Bitvector library *)
+
+(* Definition of the bit vector type [bvn] (in two steps). *)
+Record bvn_aux := BVN { val : Z }. (* Never used directly. *)
+
+(* Module eventually used to apply the functor. *)
+Module IslaBV : BV with Definition bvn := bvn_aux.
+  Definition bvn := bvn_aux.
 End IslaBV.
 
+(* Exposes [bvn] to the top level, used in all lemmas. *)
+Import IslaBV.
+
+(** *** Functor instantiation (language definition) *)
+
 Module IslaLang := IslaLangF IslaBV.
+Import IslaLang.
 
-Export IslaLang.
-
-Goal bvn = Z.
-Proof. reflexivity. Qed.
-
+(* Here, [bvn] is used consistently everywhere. *)
 *)
 }}
