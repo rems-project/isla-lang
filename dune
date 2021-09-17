@@ -47,14 +47,13 @@
  (action
   (run ott -quotient_rules true -i isla_lang.ott -o isla_lang_quotiented.tex)))
 
-;FIXME broken (triggered by dune language version update)
-;(rule
-; (target isla_lang_quotiented.pdf)
-; (deps isla_lang_quotiented.tex)
-; (mode promote)
-; (action
-;  (ignore-stdout
-;   (run pdflatex isla_lang_quotiented.tex))))
+(rule
+ (target isla_lang_quotiented.pdf)
+ (deps isla_lang_quotiented.tex)
+ (mode promote)
+ (action
+  (ignore-stdout
+   (run pdflatex isla_lang_quotiented.tex))))
 
 (rule
  (target isla_lang_unquotiented.tex)
@@ -63,14 +62,13 @@
   (run ott -quotient_rules false -i isla_lang.ott -o
     isla_lang_unquotiented.tex)))
 
-;FIXME broken (triggered by dune language version update)
-;(rule
-; (target isla_lang_unquotiented.pdf)
-; (deps isla_lang_unquotiented.tex)
-; (mode promote)
-; (action
-;  (ignore-stdout
-;   (run pdflatex isla_lang_unquotiented.tex))))
+(rule
+ (target isla_lang_unquotiented.pdf)
+ (deps isla_lang_unquotiented.tex)
+ (mode promote)
+ (action
+  (ignore-stdout
+   (run pdflatex isla_lang_unquotiented.tex))))
 
 (install
  (package isla-lang)

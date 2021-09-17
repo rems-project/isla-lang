@@ -364,8 +364,8 @@ event :: '' ::=  {{ aux _ annot }} {{auxparam 'a }}
   |  ( branch int str )                                                         :: :: Branch  {{ com Sail trace fork }}
   |  ( read-reg name accessor_list valu )                                       :: :: ReadReg {{ com read value `valu` from register `name` }}
   |  ( write-reg name accessor_list valu )                                      :: :: WriteReg {{ com write value `valu` to register `name` }}
-  |  ( read-mem valu rkind addr num_bytes tag_value )                                 :: :: ReadMem {{ com read value `valu` from memory address `addr`, with read kind `rkind`, byte width `byte_width`, and `tag_value` is the optional capability tag }}
-  |  ( write-mem valu wkind addr data num_bytes tag_value )                           :: :: WriteMem {{ com write value `valu` to memory address `addr`, with write kind `wkind`, byte width `byte_width`, `tag_value` is the optional capability tag, and success flag `vvar` }}
+  |  ( read-mem valu rkind addr num_bytes tag_value )                                 :: :: ReadMem {{ com read value `valu` from memory address `addr`, with read kind `rkind`, byte width `byte\_width`, and `tag\_value` is the optional capability tag }}
+  |  ( write-mem valu wkind addr data num_bytes tag_value )                           :: :: WriteMem {{ com write value `valu` to memory address `addr`, with write kind `wkind`, byte width `byte\_width`, `tag\_value` is the optional capability tag, and success flag `vvar` }}
   |  ( branch-address addr )                                                    :: :: BranchAddress {{ com announce branch address `addr`, to induce ctrl dependency in the concurrency model }}
   |  ( barrier bkind )                                                          :: :: Barrier {{ com memory barrier of kind `bkind` }}
   |  ( cache-op ckind addr )                                                    :: :: CacheOp {{ com cache maintenance effect of kind `ckind`, at address `addr`, for data-cache clean etc. }}
