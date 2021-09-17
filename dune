@@ -6,6 +6,7 @@
  (libraries pprint))
 
 (executable
+ (package isla-lang)
  (name main)
  (public_name isla-lang)
  (flags (:standard -warn-error -A -w -27 -w -26))
@@ -72,9 +73,9 @@
 ;   (run pdflatex isla_lang_unquotiented.tex))))
 
 (install
+ (package isla-lang)
  (files isla_lang.ott)
- (section share)
- (package isla-lang))
+ (section share))
 
 (rule
  (target lang.v)
@@ -84,7 +85,7 @@
    (system "sed '2,/(\\*REAL_START\\*)/d' %{deps}"))))
 
 (coq.theory
+ (package isla-lang-coq)
  (name isla)
- (package isla-lang)
  (modules lang)
  (synopsis "Isla language library."))

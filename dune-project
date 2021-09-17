@@ -16,5 +16,11 @@
  (depends
    (pprint (>= 20171003))
    (menhir :build)
+   (ott (and (>= 0.31) :build))))
+
+(package
+ (name isla-lang-coq)
+ (synopsis "Coq library providing an AST for the isla language")
+ (depends
    (coq (>= 8.13.2))
    (ott (and (>= 0.31) :build))))

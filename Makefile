@@ -1,17 +1,16 @@
-.PHONY: all main lib opam pdf clean realclean install uninstall
+.PHONY: all
+all:
+	@dune build
 
+.PHONY: isla-lang
+isla-lang:
+	@dune build -p isla-lang
 
-all: main lib opam
+.PHONY: isla-lang.coq
+isla-lang.coq:
+	@dune build -p isla-lang.coq
 
-main:
-	@dune build main.exe
-
-lib:
-	@dune build isla_lang.a
-
-opam:
-	@dune build @install
-
+.PHONY: pdf
 pdf: isla_lang_quotiented.pdf isla_lang_unquotiented.pdf
 
 isla_lang_quotiented.pdf: isla_lang.ott
@@ -20,17 +19,22 @@ isla_lang_quotiented.pdf: isla_lang.ott
 isla_lang_unquotiented.pdf: isla_lang.ott
 	@dune build $@
 
+.PHONY: clean
 clean:
 	@dune clean
 
+.PHONY: realclean
 realclean: clean
 	@rm -rf *.pdf
 
+.PHONY: install
 install: opam
 	@dune install
 
+.PHONY: uninstall
 uninstall: opam
 	@dune uninstall
 
+.PHONY: format
 format:
 	@dune build @fmt
