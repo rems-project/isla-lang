@@ -75,6 +75,11 @@
  (files isla_lang.ott)
  (section share))
 
+(install
+ (package isla-lang)
+ (files isla_lang_unquotiented.pdf isla_lang_quotiented.pdf)
+ (section doc))
+
 (rule
  (target lang.v)
  (deps isla_lang.v)
