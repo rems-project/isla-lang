@@ -13,3 +13,8 @@ install:
 .PHONY: uninstall
 uninstall:
 	@dune uninstall
+
+.PHONY: apply_header
+apply_header:
+	$(MAKE) clean
+	headache -c etc/headache_config -h LICENSE isla_lang.ott isla_lang.ml main.ml
