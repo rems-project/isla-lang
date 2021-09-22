@@ -20,8 +20,8 @@ Note that the previous command will install the last committed changes only,
 and thus not include (staged or unstaged) local changes. You need to use the
 `-w` option if you want to pin the repo with all the local changes.
 
-To only install the project's dependencies, run the following command from
-your local clone of the repository:
+To only install the project's dependencies only, run the following command
+from your local clone of the repository:
 ```sh
 opam install --deps-only ./isla-lang.opam
 ```
@@ -38,10 +38,11 @@ above) instead.
 
 Note that this package comes with PDF versions of the languages of isla
 traces. After running make, these can be found under the `_build/default`
-directory (e.g., `_build/default/isla_lang_quotiented.pdf).
+directory (e.g., `_build/default/isla_lang_quotiented.pdf`).
 
 The package also comes with an example program called `isla-lang`. From the
-repository, it can be invoked with `dune exec -- isla-lang`.
+repository, it can be invoked with `dune exec -- isla-lang <ARGS>`. You can
+run `dune exec -- isla-lang -h` to see a list of available options.
 
 ## Funding
 
