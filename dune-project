@@ -15,4 +15,5 @@
  (depends
    (pprint (>= 20171003))
    (menhir :build)
+   (conf-texlive :build)
    (ott (and (>= 0.31) :build))))
