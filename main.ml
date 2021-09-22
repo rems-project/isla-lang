@@ -51,62 +51,66 @@
 
 open Isla_lang
 
-let input_file = ref (None : string option)
+type ast = AST.lrng AST.trcs
 
-let opts =
-  [("-i", Arg.String (fun s -> input_file := Some s), Printf.sprintf "<string> input file")]
+let pp_pretty : out_channel -> ast -> unit = fun oc ast ->
+  PPrintEngine.ToChannel.compact oc (PP.pp_trcs ast)
 
-let usage =
-  "Usage: just main (for interactive) or main -i <filename> (for batch)\n"
-  ^ "       main -help   to show options"
+let pp_raw : out_channel -> ast -> unit = fun oc ast ->
+  PPrintEngine.ToChannel.compact oc (PP.pp_raw_trcs ast)
 
-let usage' = usage ^ "\n" (*^ "Options:"*)
+let parse : Lexing.lexbuf -> ast = fun lexbuf ->
+  Parser.trcs_start Lexer.token lexbuf
 
-let help outchan msg = Printf.fprintf outchan "%s\n\n" msg
-
-let collect_file s =
-  help stderr "illegal argument";
-  exit 1
-
-let _ =
-  try Arg.parse_argv Sys.argv (Arg.align opts) collect_file usage' with
-  | Arg.Bad msg ->
-      help stderr msg;
-      exit 1
-  | Arg.Help msg ->
-      help stdout msg;
-      exit 0
-
-let process linebuf =
-  (* Run the generated lexer and parser on this input *)
+let run_batch : in_channel -> unit = fun ic ->
+  let lexbuf = Lexing.from_channel ic in
   try
-    let t = Parser.trcs_start Lexer.token linebuf in
-    (* Show the generated raw and "pretty" pp of the result *)
-    Printf.printf "   ";
-    PPrintEngine.ToChannel.compact stdout (PP.pp_raw_trcs t);
-    Printf.printf "\n";
-    Printf.printf "   ";
-    PPrintEngine.ToChannel.compact stdout (PP.pp_trcs t);
-    Printf.printf "\n"
+    let ast = parse lexbuf in
+    Printf.printf "Raw version:\n    %a\n\n" pp_raw ast;
+    Printf.printf "Pretty version:\n    %a\n" pp_pretty ast;
   with
-  | Lexer.Error msg -> Printf.fprintf stdout "%s" msg
-  | Parser.Error ->
-      Printf.fprintf stdout "%s^\nAt offset %d: syntax error.\n"
-        (String.make (Lexing.lexeme_start linebuf) ' ')
-        (Lexing.lexeme_start linebuf)
+  | Lexer.Error(s) -> Printf.printf "%s" s; exit 1
+  | Parser.Error   -> Printf.printf "Parse error.\n"; exit 1
+
+let run_interactive : unit -> unit = fun _ ->
+  let prompt = "isla-lang> " in
+  let process_line line =
+    if String.length (String.trim line) = 0 then () else
+    let lexbuf = Lexing.from_string line in
+    try
+      let ast = parse lexbuf in
+      Printf.printf "Raw:    %a\n" pp_raw ast;
+      Printf.printf "Pretty: %a\n" pp_pretty ast;
+    with
+    | Lexer.Error(s) -> Printf.printf "%s" s; exit 1
+    | Parser.Error   ->
+        let padding = String.length prompt + Lexing.lexeme_start lexbuf in
+        Printf.printf "%s^\nAt offset %d: syntax error.\n%!"
+          (String.make padding ' ') (Lexing.lexeme_start lexbuf); exit 1
+  in
+  try while true do
+    Printf.printf "%s%!" prompt;
+    process_line (read_line ())
+  done with End_of_file -> ()
+
+let with_file : string -> (in_channel -> 'a) -> 'a = fun file fn ->
+  let ic = open_in file in
+  let res = fn ic in
+  close_in ic; res
+
+let print_help : string -> unit = fun prog ->
+  Printf.printf "Usage: %s [-i|-h|-|FILE]\n" prog;
+  Printf.printf "Options:\n";
+  Printf.printf "\t-i\tRun in interactive mode.\n";
+  Printf.printf "\t-h\tDisplay this help message.\n";
+  Printf.printf "\t-\tProcess standard input as an isla trace file.\n";
+  Printf.printf "\tFILE\tProcess FILE as an isla trace file.\n"
 
 let _ =
-  match !input_file with
-  | None ->
-      Printf.printf "enter isla traces\n";
-      let foo () =
-        let line = read_line () in
-        let linebuf = Lexing.from_string line in
-        process linebuf;
-        flush stdout
-      in
-      foo ()
-  | Some f ->
-      let c = open_in f in
-      let linebuf = Lexing.from_channel c in
-      process linebuf
+  let not_arg s = String.length s = 0 || s.[0] <> '-' in
+  match Sys.argv with
+  | [| _    ; "-i" |]                -> run_interactive ()
+  | [| prog ; "-h" |]                -> print_help prog
+  | [| _    ; "-"  |]                -> run_batch stdin
+  | [| _    ; f    |] when not_arg f -> with_file f run_batch
+  | _                                -> print_help Sys.argv.(0); exit 1
