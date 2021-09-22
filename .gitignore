@@ -1,5 +1,2 @@
-main.byte
-main.exe
 _build
-*.pdf
 .merlin

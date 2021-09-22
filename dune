@@ -19,19 +19,18 @@
  (deps isla_lang.ott fix-substs.sed)
  (action
   (progn
-    (run ott -show_sort false -quotient_rules false -aux_style_rules false -i
-      isla_lang.ott -o isla_lang_parser.mly -o isla_lang_lexer.mll -o
-      isla_lang_ast.ml -o isla_lang.v)
-    (run sed -i -f fix-substs.sed isla_lang_ast.ml isla_lang.v))))
+   (run ott -show_sort false -quotient_rules false -aux_style_rules false -i
+     isla_lang.ott -o isla_lang_parser.mly -o isla_lang_lexer.mll -o
+     isla_lang_ast.ml -o isla_lang.v)
+   (run sed -i -f fix-substs.sed isla_lang_ast.ml isla_lang.v))))
 
 (rule
  (target ott.path)
- (action (with-stdout-to ott.path (system "opam var ott:share"))))
+ (action (with-stdout-to %{target} (system "opam var ott:share"))))
 
 (rule
  (target ottlib.mly)
- (action
-  (copy "%{read-lines:ott.path}/menhir_library_extra.mly" ottlib.mly)))
+ (action (copy "%{read-lines:ott.path}/menhir_library_extra.mly" %{target})))
 
 (menhir
  (modules isla_lang_parser ottlib)
@@ -44,29 +43,22 @@
 (rule
  (target isla_lang_quotiented.tex)
  (deps isla_lang.ott)
- (action
-  (run ott -quotient_rules true -i isla_lang.ott -o isla_lang_quotiented.tex)))
+ (action (run ott -quotient_rules true -i %{deps} -o %{target})))
 
 (rule
  (target isla_lang_quotiented.pdf)
  (deps isla_lang_quotiented.tex)
- (action
-  (ignore-stdout
-   (run pdflatex isla_lang_quotiented.tex))))
+ (action (ignore-stdout (run pdflatex %{deps}))))
 
 (rule
  (target isla_lang_unquotiented.tex)
  (deps isla_lang.ott)
- (action
-  (run ott -quotient_rules false -i isla_lang.ott -o
-    isla_lang_unquotiented.tex)))
+ (action (run ott -quotient_rules false -i %{deps} -o %{target})))
 
 (rule
  (target isla_lang_unquotiented.pdf)
  (deps isla_lang_unquotiented.tex)
- (action
-  (ignore-stdout
-   (run pdflatex isla_lang_unquotiented.tex))))
+ (action (ignore-stdout (run pdflatex %{deps}))))
 
 (install
  (package isla-lang)
