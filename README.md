@@ -37,8 +37,9 @@ not to do manual installs with `make install` and use `opam` (as explained
 above) instead.
 
 Note that this package comes with PDF versions of the languages of isla
-traces. After running make, these can be found under the `_build/default`
-directory (e.g., `_build/default/isla_lang_quotiented.pdf`).
+traces. To avoid having `pdflatex` as a dependency, these files are stored
+in the repository under the `doc` directory. They can be updated by using
+`make update_pdfs`.
 
 The package also comes with an example program called `isla-lang`. From the
 repository, it can be invoked with `dune exec -- isla-lang <ARGS>`. You can

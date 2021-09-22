@@ -41,24 +41,34 @@
  (modules isla_lang_lexer))
 
 (rule
- (target isla_lang_quotiented.tex)
+ (target isla_lang_quotiented_generated.tex)
  (deps isla_lang.ott)
  (action (run ott -quotient_rules true -i %{deps} -o %{target})))
 
 (rule
- (target isla_lang_quotiented.pdf)
- (deps isla_lang_quotiented.tex)
+ (target isla_lang_quotiented_generated.pdf)
+ (deps isla_lang_quotiented_generated.tex)
  (action (ignore-stdout (run pdflatex %{deps}))))
 
 (rule
- (target isla_lang_unquotiented.tex)
+ (target isla_lang_quotiented.pdf)
+ (deps doc/isla_lang_quotiented.pdf)
+ (action (copy %{deps} %{target})))
+
+(rule
+ (target isla_lang_unquotiented_generated.tex)
  (deps isla_lang.ott)
  (action (run ott -quotient_rules false -i %{deps} -o %{target})))
 
 (rule
- (target isla_lang_unquotiented.pdf)
- (deps isla_lang_unquotiented.tex)
+ (target isla_lang_unquotiented_generated.pdf)
+ (deps isla_lang_unquotiented_generated.tex)
  (action (ignore-stdout (run pdflatex %{deps}))))
+
+(rule
+ (target isla_lang_unquotiented.pdf)
+ (deps doc/isla_lang_unquotiented.pdf)
+ (action (copy %{deps} %{target})))
 
 (install
  (package isla-lang)
