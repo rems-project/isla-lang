@@ -440,7 +440,10 @@ single base_val vvar :: subst_val
 embed
 {{ coq
 
-Coercion RegVal_Base : base_val >-> valu.
+Notation RVal_Symbolic b := (RegVal_Base (Val_Symbolic b)).
+Notation RVal_Bool b := (RegVal_Base (Val_Bool b)).
+Notation RVal_Bits b := (RegVal_Base (Val_Bits b)).
+Notation RVal_Enum b := (RegVal_Base (Val_Enum b)).
 Definition base_val_to_exp (v : base_val) : exp := Val v Mk_annot.
 Coercion base_val_to_exp : base_val >-> exp.
 
