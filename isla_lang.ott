@@ -319,6 +319,14 @@ base_val :: 'Val_' ::=
  | bv                                   :: :: Bits
  | enum                                 :: :: Enum
 
+% Version with register names for assumptions
+grammar
+assume_val :: 'AVal_' ::=
+ | ( name accessor_list )               :: :: Var
+ | bool                                 :: :: Bool
+ | bv                                   :: :: Bits
+ | enum                                 :: :: Enum
+
 %%%%% exp %%%%%
 grammar
 exp :: '' ::=                           {{ aux _ annot }}
@@ -331,6 +339,16 @@ exp :: '' ::=                           {{ aux _ annot }}
   | ( manyop exp1 .. expj )             :: :: Manyop
   | ( ite exp1 exp2 exp3 )              :: :: Ite
 
+grammar
+a_exp :: 'AExp_' ::=                    {{ aux _ annot }}
+                                        {{ auxparam 'a }}
+                                        {{ menhir-start }}
+                                        {{ menhir-start-type (Isla_lang_ast.lrng) Isla_lang_ast.a_exp }}
+  | assume_val                          :: :: Val
+  | ( unop a_exp )                      :: :: Unop
+  | ( binop a_exp1 a_exp2 )             :: :: Binop
+  | ( manyop a_exp1 .. a_expj )         :: :: Manyop
+  | ( ite a_exp1 a_exp2 a_exp3 )        :: :: Ite
 
 
 
@@ -417,6 +435,8 @@ event :: '' ::=  {{ aux _ annot }} {{auxparam 'a }}
   |  ( sleeping vvar )                                                          :: :: Sleeping {{ com Arm sleeping predicate }}
   |  ( wake-request )                                                           :: :: WakeRequest {{ com Arm wake request }}
   |  ( sleep-request )                                                          :: :: SleepRequest {{ com Arm sleep request }}
+  |  ( assume-reg name accessor_list valu )                                     :: :: AssumeReg {{ com Notes a register assumption that Isla has been configured to use }}
+  |  ( assume a_exp )                                                           :: :: Assume {{ com Notes a constraint that Isla has been configured to assume }}
 
 %%%%% traces %%%%%
 
