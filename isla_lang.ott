@@ -454,6 +454,17 @@ trcs :: '' ::=                {{ menhir-start }}
                               {{ coq list (list event) }}
  | trc1 .. trck                                                                 :: :: Traces
 
+grammar
+
+maybe_fork :: '' ::=                                                            {{ auxparam 'a }}
+ | (forks str forking_trc1 .. forking_trck )                                    :: :: Fork
+ |                                                                              :: :: NoFork
+
+forking_trc :: '' ::=                                                           {{ menhir-start }}
+                                                                                {{ auxparam 'a }}
+                                                                                {{ menhir-start-type Isla_lang_ast.lrng Isla_lang_ast.forking_trc }}
+ | ( trace event1 .. eventj maybe_fork )                                        :: :: ForkingTrace
+
 substitutions
 single base_val vvar :: subst_val
 

@@ -52,15 +52,25 @@
 open Isla_lang
 
 type ast = AST.lrng AST.trcs
+type tree_ast = AST.lrng AST.forking_trc
 
 let pp_pretty : out_channel -> ast -> unit = fun oc ast ->
   PPrintEngine.ToChannel.compact oc (PP.pp_trcs ast)
 
+let pp_pretty_tree : out_channel -> tree_ast -> unit = fun oc ast ->
+  PPrintEngine.ToChannel.compact oc (PP.pp_forking_trc ast)
+
 let pp_raw : out_channel -> ast -> unit = fun oc ast ->
   PPrintEngine.ToChannel.compact oc (PP.pp_raw_trcs ast)
 
+let pp_raw_tree : out_channel -> tree_ast -> unit = fun oc ast ->
+  PPrintEngine.ToChannel.compact oc (PP.pp_raw_forking_trc ast)
+
 let parse : Lexing.lexbuf -> ast = fun lexbuf ->
   Parser.trcs_start Lexer.token lexbuf
+
+let parse_tree : Lexing.lexbuf -> tree_ast = fun lexbuf ->
+  Parser.forking_trc_start Lexer.token lexbuf
 
 let run_batch : in_channel -> unit = fun ic ->
   let lexbuf = Lexing.from_channel ic in
@@ -68,6 +78,16 @@ let run_batch : in_channel -> unit = fun ic ->
     let ast = parse lexbuf in
     Printf.printf "Raw version:\n    %a\n\n" pp_raw ast;
     Printf.printf "Pretty version:\n    %a\n" pp_pretty ast;
+  with
+  | Lexer.Error(s) -> Printf.printf "%s" s; exit 1
+  | Parser.Error   -> Printf.printf "Parse error.\n"; exit 1
+
+let run_batch_tree : in_channel -> unit = fun ic ->
+  let lexbuf = Lexing.from_channel ic in
+  try
+    let ast = parse_tree lexbuf in
+    Printf.printf "Raw version:\n    %a\n\n" pp_raw_tree ast;
+    Printf.printf "Pretty version:\n    %a\n" pp_pretty_tree ast;
   with
   | Lexer.Error(s) -> Printf.printf "%s" s; exit 1
   | Parser.Error   -> Printf.printf "Parse error.\n"; exit 1
@@ -93,14 +113,36 @@ let run_interactive : unit -> unit = fun _ ->
     process_line (read_line ())
   done with End_of_file -> ()
 
+let run_interactive_tree : unit -> unit = fun _ ->
+  let prompt = "isla-lang> " in
+  let process_line line =
+    if String.length (String.trim line) = 0 then () else
+    let lexbuf = Lexing.from_string line in
+    try
+      let ast = parse_tree lexbuf in
+      Printf.printf "Raw:    %a\n" pp_raw_tree ast;
+      Printf.printf "Pretty: %a\n" pp_pretty_tree ast;
+    with
+    | Lexer.Error(s) -> Printf.printf "%s" s; exit 1
+    | Parser.Error   ->
+        let padding = String.length prompt + Lexing.lexeme_start lexbuf in
+        Printf.printf "%s^\nAt offset %d: syntax error.\n%!"
+          (String.make padding ' ') (Lexing.lexeme_start lexbuf); exit 1
+  in
+  try while true do
+    Printf.printf "%s%!" prompt;
+    process_line (read_line ())
+  done with End_of_file -> ()
+
 let with_file : string -> (in_channel -> 'a) -> 'a = fun file fn ->
   let ic = open_in file in
   let res = fn ic in
   close_in ic; res
 
 let print_help : string -> unit = fun prog ->
-  Printf.printf "Usage: %s [-i|-h|-|FILE]\n" prog;
+  Printf.printf "Usage: %s [-t] [-i|-h|-|FILE]\n" prog;
   Printf.printf "Options:\n";
+  Printf.printf "\t-t\tParse traces as trees.\n";
   Printf.printf "\t-i\tRun in interactive mode.\n";
   Printf.printf "\t-h\tDisplay this help message.\n";
   Printf.printf "\t-\tProcess standard input as an isla trace file.\n";
@@ -113,4 +155,8 @@ let _ =
   | [| prog ; "-h" |]                -> print_help prog
   | [| _    ; "-"  |]                -> run_batch stdin
   | [| _    ; f    |] when not_arg f -> with_file f run_batch
+  | [| _    ; "-t" ; "-i" |]                -> run_interactive_tree ()
+  | [| prog ; "-t" ; "-h" |]                -> print_help prog
+  | [| _    ; "-t" ; "-"  |]                -> run_batch_tree stdin
+  | [| _    ; "-t" ; f    |] when not_arg f -> with_file f run_batch_tree
   | _                                -> print_help Sys.argv.(0); exit 1
