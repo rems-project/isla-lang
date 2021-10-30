@@ -1,7 +1,7 @@
 # isla-lang
 
 This constructs an OCaml datatype, parser, and pretty printer for the SMT
-instruction-semantics description output by isla. Everything is generated
+instruction-semantics description output by [isla](https://github.com/rems-project/isla/). Everything is generated
 from file `isla_lang.ott` using [ott](https://github.com/ott-lang/ott).
 
 ## Installation
