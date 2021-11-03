@@ -437,6 +437,7 @@ event :: '' ::=  {{ aux _ annot }} {{auxparam 'a }}
   |  ( sleep-request )                                                          :: :: SleepRequest {{ com Arm sleep request }}
   |  ( assume-reg name accessor_list valu )                                     :: :: AssumeReg {{ com Notes a register assumption that Isla has been configured to use }}
   |  ( assume a_exp )                                                           :: :: Assume {{ com Notes a constraint that Isla has been configured to assume }}
+  |  ( enum-description name name1 .. namej )                                   :: :: EnumDescription {{ com Gives the name and constructors in order for a source enum }}
 
 %%%%% traces %%%%%
 
