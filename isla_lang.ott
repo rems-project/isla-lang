@@ -457,13 +457,13 @@ trcs :: '' ::=                {{ menhir-start }}
 grammar
 
 maybe_fork :: '' ::=                                                            {{ auxparam 'a }}
- | (forks str forking_trc1 .. forking_trck )                                    :: :: Fork
- |                                                                              :: :: NoFork
+ | (cases str tree_trc1 .. tree_trck )                                    :: :: Cases
+ |                                                                              :: :: End
 
-forking_trc :: '' ::=                                                           {{ menhir-start }}
+tree_trc :: '' ::=                                                              {{ menhir-start }}
                                                                                 {{ auxparam 'a }}
-                                                                                {{ menhir-start-type Isla_lang_ast.lrng Isla_lang_ast.forking_trc }}
- | ( trace event1 .. eventj maybe_fork )                                        :: :: ForkingTrace
+                                                                                {{ menhir-start-type Isla_lang_ast.lrng Isla_lang_ast.tree_trc }}
+ | ( trace event1 .. eventj maybe_fork )                                        :: :: TreeTrace
 
 substitutions
 single base_val vvar :: subst_val

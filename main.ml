@@ -52,25 +52,25 @@
 open Isla_lang
 
 type ast = AST.lrng AST.trcs
-type tree_ast = AST.lrng AST.forking_trc
+type tree_ast = AST.lrng AST.tree_trc
 
 let pp_pretty : out_channel -> ast -> unit = fun oc ast ->
   PPrintEngine.ToChannel.compact oc (PP.pp_trcs ast)
 
 let pp_pretty_tree : out_channel -> tree_ast -> unit = fun oc ast ->
-  PPrintEngine.ToChannel.compact oc (PP.pp_forking_trc ast)
+  PPrintEngine.ToChannel.compact oc (PP.pp_tree_trc ast)
 
 let pp_raw : out_channel -> ast -> unit = fun oc ast ->
   PPrintEngine.ToChannel.compact oc (PP.pp_raw_trcs ast)
 
 let pp_raw_tree : out_channel -> tree_ast -> unit = fun oc ast ->
-  PPrintEngine.ToChannel.compact oc (PP.pp_raw_forking_trc ast)
+  PPrintEngine.ToChannel.compact oc (PP.pp_raw_tree_trc ast)
 
 let parse : Lexing.lexbuf -> ast = fun lexbuf ->
   Parser.trcs_start Lexer.token lexbuf
 
 let parse_tree : Lexing.lexbuf -> tree_ast = fun lexbuf ->
-  Parser.forking_trc_start Lexer.token lexbuf
+  Parser.tree_trc_start Lexer.token lexbuf
 
 let run_batch : in_channel -> unit = fun ic ->
   let lexbuf = Lexing.from_channel ic in
