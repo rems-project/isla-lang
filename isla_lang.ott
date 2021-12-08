@@ -58,7 +58,8 @@
 
 embed {{ coq
 (*REAL_START*)
-From isla Require Export base bitvector.
+From Coq Require Export String.
+From bitvector Require Export bitvector.
 
 Definition var_name : Set := Z.
 Definition eq_var_name (v w : var_name) : bool := Z.eqb v w.
