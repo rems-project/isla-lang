@@ -72,6 +72,9 @@ let parse : Lexing.lexbuf -> ast = fun lexbuf ->
 let parse_tree : Lexing.lexbuf -> tree_ast = fun lexbuf ->
   Parser.tree_trc_start Lexer.token lexbuf
 
+let pp_position : out_channel -> Lexing.position -> unit = fun oc pos ->
+  PPrint.ToChannel.compact oc (AST.pp_lpos pos)
+
 let run_batch : in_channel -> unit = fun ic ->
   let lexbuf = Lexing.from_channel ic in
   try
@@ -105,8 +108,9 @@ let run_interactive : unit -> unit = fun _ ->
     | Lexer.Error(s) -> Printf.printf "%s" s; exit 1
     | Parser.Error   ->
         let padding = String.length prompt + Lexing.lexeme_start lexbuf in
-        Printf.printf "%s^\nAt offset %d: syntax error.\n%!"
-          (String.make padding ' ') (Lexing.lexeme_start lexbuf); exit 1
+          print_string (String.make padding ' ');
+          pp_position stdout (Lexing.lexeme_start_p lexbuf);
+          exit 1
   in
   try while true do
     Printf.printf "%s%!" prompt;
@@ -126,8 +130,9 @@ let run_interactive_tree : unit -> unit = fun _ ->
     | Lexer.Error(s) -> Printf.printf "%s" s; exit 1
     | Parser.Error   ->
         let padding = String.length prompt + Lexing.lexeme_start lexbuf in
-        Printf.printf "%s^\nAt offset %d: syntax error.\n%!"
-          (String.make padding ' ') (Lexing.lexeme_start lexbuf); exit 1
+          print_string (String.make padding ' ');
+          pp_position stdout (Lexing.lexeme_start_p lexbuf);
+          exit 1
   in
   try while true do
     Printf.printf "%s%!" prompt;
