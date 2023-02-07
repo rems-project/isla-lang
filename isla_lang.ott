@@ -59,7 +59,7 @@
 embed {{ coq
 (*REAL_START*)
 From Coq Require Export String.
-From bitvector Require Export bitvector.
+From stdpp.unstable Require Export bitvector.
 
 Definition var_name : Set := Z.
 Definition eq_var_name (v w : var_name) : bool := Z.eqb v w.
