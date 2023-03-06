@@ -66,14 +66,24 @@ let pp_raw : out_channel -> ast -> unit = fun oc ast ->
 let pp_raw_tree : out_channel -> tree_ast -> unit = fun oc ast ->
   PPrint.ToChannel.compact oc (PP.pp_raw_tree_trc ast)
 
-let parse : Lexing.lexbuf -> ast = fun lexbuf ->
-  Parser.trcs_start Lexer.token lexbuf
-
-let parse_tree : Lexing.lexbuf -> tree_ast = fun lexbuf ->
-  Parser.tree_trc_start Lexer.token lexbuf
-
 let pp_position : out_channel -> Lexing.position -> unit = fun oc pos ->
   PPrint.ToChannel.compact oc (AST.pp_lpos pos)
+
+let with_parse_errors f lexbuf =
+  try
+    f lexbuf
+  with
+  | Lexer.Error(s) -> Printf.printf "%s" s; exit 1
+  | Parser.Error   ->
+     pp_position stdout (Lexing.lexeme_start_p lexbuf);
+     print_newline ();
+     exit 1
+
+let parse : Lexing.lexbuf -> ast = fun lexbuf ->
+  with_parse_errors (Parser.trcs_start Lexer.token) lexbuf
+
+let parse_tree : Lexing.lexbuf -> tree_ast = fun lexbuf ->
+  with_parse_errors (Parser.tree_trc_start Lexer.token) lexbuf
 
 let run_batch : in_channel -> unit = fun ic ->
   let lexbuf = Lexing.from_channel ic in
@@ -117,22 +127,15 @@ let run_interactive : unit -> unit = fun _ ->
     process_line (read_line ())
   done with End_of_file -> ()
 
+
 let run_interactive_tree : unit -> unit = fun _ ->
   let prompt = "isla-lang> " in
   let process_line line =
     if String.length (String.trim line) = 0 then () else
     let lexbuf = Lexing.from_string line in
-    try
-      let ast = parse_tree lexbuf in
-      Printf.printf "Raw:    %a\n" pp_raw_tree ast;
-      Printf.printf "Pretty: %a\n" pp_pretty_tree ast;
-    with
-    | Lexer.Error(s) -> Printf.printf "%s" s; exit 1
-    | Parser.Error   ->
-        let padding = String.length prompt + Lexing.lexeme_start lexbuf in
-          print_string (String.make padding ' ');
-          pp_position stdout (Lexing.lexeme_start_p lexbuf);
-          exit 1
+    let ast = parse_tree lexbuf in
+    Printf.printf "Raw:    %a\n" pp_raw_tree ast;
+    Printf.printf "Pretty: %a\n" pp_pretty_tree ast;
   in
   try while true do
     Printf.printf "%s%!" prompt;
