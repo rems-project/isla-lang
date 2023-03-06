@@ -381,12 +381,12 @@ valu, addr, data, rkind, wkind, bkind, ckind, opcode :: 'RegVal_' ::=
  | (_ bvi int )                         :: :: I
  | str                                  :: :: String
  | (_ unit )                            :: :: Unit
- | ( name (_ unit))                     :: :: NamedUnit
  | (_ vec valu1  ..  valuk  )           :: :: Vector  % TODO: fix syntax
  | (_ list valu1 .. valuk )             :: :: List  % TODO: fix syntax
 %%% TODO: MS: The coq version of this is wrong. Ott generates list register_name * valu
 %%%  but it should be list (register_name * valu)
  | (_ struct  selem1 .. selemk )        :: :: Struct
+ | ( name valu )                        :: :: Constructor
  | (_ poison )                          :: :: Poison
 
 % structure element constructor: pair of field name and value
@@ -411,9 +411,13 @@ accessor_list :: '' ::=  {{ coq list accessor }}
   | nil                                                                         :: :: Nil
   | ( accessor1 .. accessork )                                                  :: :: Cons
 
-valu_option, tag_value :: '' ::= {{ ocaml valu option }} {{ coq option valu }}
-  | None                                                                        :: :: None
-  | Some valu                                                                   :: :: Some
+arg_list :: '' ::= {{ coq list valu }}
+  | nil                                                                         :: :: NilArgs
+  | valu1 .. valuk                                                              :: :: ListArgs
+
+tag_value :: '' ::= {{ ocaml valu option }} {{ coq option valu }}
+  |                                                                             :: :: None
+  | valu                                                                        :: :: Some
 
 % The matching data type is `Event` in `isla-lib/src/smt.rs`
 % The order of constructors should match the one of the `Event` definition.
@@ -438,6 +442,9 @@ event :: '' ::=  {{ aux _ annot }} {{auxparam 'a }}
   |  ( sleep-request )                                                          :: :: SleepRequest {{ com Arm sleep request }}
   |  ( assume-reg name accessor_list valu )                                     :: :: AssumeReg {{ com Notes a register assumption that Isla has been configured to use }}
   |  ( assume a_exp )                                                           :: :: Assume {{ com Notes a constraint that Isla has been configured to assume }}
+  |  ( function-assumption name valu arg_list )                                 :: :: FunAssume {{ com Notes that the user has supplied a precondition for a particular function }}
+  |  ( use-function-assumption name valu arg_list )                             :: :: UseFunAssume {{ com A use of a pre-declared function assumption }}
+  |  ( abstract-call name valu arg_list )                                       :: :: AbstractCall {{ com A function call that Isla has abstract }}
 
 %%%%% traces %%%%%
 
@@ -447,12 +454,14 @@ trc :: '' ::=                 {{ menhir-start }}
                               {{ auxparam 'a }}
                               {{ menhir-start-type Isla_lang_ast.lrng Isla_lang_ast.trc }}
                               {{ coq list event }}
+                              {{ lex-comment ; }}
  | ( trace event1 .. eventj )                                                   :: :: Trace
 
 trcs :: '' ::=                {{ menhir-start }}
                               {{ auxparam 'a }}
                               {{ menhir-start-type Isla_lang_ast.lrng Isla_lang_ast.trcs }}
                               {{ coq list (list event) }}
+                              {{ lex-comment ; }}
  | trc1 .. trck                                                                 :: :: Traces
 
 grammar
@@ -464,6 +473,7 @@ maybe_fork :: '' ::=                                                            
 tree_trc :: '' ::=                                                              {{ menhir-start }}
                                                                                 {{ auxparam 'a }}
                                                                                 {{ menhir-start-type Isla_lang_ast.lrng Isla_lang_ast.tree_trc }}
+                                                                                {{ lex-comment ; }}
  | ( trace event1 .. eventj maybe_fork )                                        :: :: TreeTrace
 
 substitutions
