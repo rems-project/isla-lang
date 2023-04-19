@@ -15,4 +15,4 @@
  (depends
    (pprint (>= 20171003))
    (menhir :build)
-   (ott (and (>= 0.31) :build))))
+   (ott (and (>= 0.33) :build))))
