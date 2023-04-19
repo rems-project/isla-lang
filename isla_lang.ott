@@ -445,6 +445,7 @@ event :: '' ::=  {{ aux _ annot }} {{auxparam 'a }}
   |  ( function-assumption name valu arg_list )                                 :: :: FunAssume {{ com Notes that the user has supplied a precondition for a particular function }}
   |  ( use-function-assumption name valu arg_list )                             :: :: UseFunAssume {{ com A use of a pre-declared function assumption }}
   |  ( abstract-call name valu arg_list )                                       :: :: AbstractCall {{ com A function call that Isla has abstract }}
+  |  ( abstract-primop name valu arg_list )                                     :: :: AbstractPrimop {{ com A primitive operation that Isla treats as abstract }}
 
 %%%%% traces %%%%%
 
