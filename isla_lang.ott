@@ -447,6 +447,16 @@ event :: '' ::=  {{ aux _ annot }} {{auxparam 'a }}
   |  ( abstract-call name valu arg_list )                                       :: :: AbstractCall {{ com A function call that Isla has abstract }}
   |  ( abstract-primop name valu arg_list )                                     :: :: AbstractPrimop {{ com A primitive operation that Isla treats as abstract }}
 
+%%%%% instruction segments %%%%%
+
+grammar
+
+segment :: '' ::=
+  | ( name nat vvar )                                                           :: :: Segment {{ com The segment's original name, its size in bits, the SMT variable }}
+
+instruction_segments :: '' ::=
+ | ( segments segment1 .. segmentk )                                            :: :: Segments
+
 %%%%% traces %%%%%
 
 grammar
@@ -464,6 +474,7 @@ trcs :: '' ::=                {{ menhir-start }}
                               {{ coq list (list event) }}
                               {{ lex-comment ; }}
  | trc1 .. trck                                                                 :: :: Traces
+ | instruction_segments trc1 .. trck                                            :: :: TracesWithSegments
 
 grammar
 
@@ -476,6 +487,13 @@ tree_trc :: '' ::=                                                              
                                                                                 {{ menhir-start-type Isla_lang_ast.lrng Isla_lang_ast.tree_trc }}
                                                                                 {{ lex-comment ; }}
  | ( trace event1 .. eventj maybe_fork )                                        :: :: TreeTrace
+
+whole_tree :: '' ::=                                                            {{ menhir-start }}
+                                                                                {{ auxparam 'a }}
+                                                                                {{ menhir-start-type Isla_lang_ast.lrng Isla_lang_ast.whole_tree }}
+                                                                                {{ lex-comment ; }}
+ | tree_trc                                                                     :: :: BareTree
+ | instruction_segments tree_trc                                                :: :: TreeWithSegments
 
 substitutions
 single base_val vvar :: subst_val
