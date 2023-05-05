@@ -3,6 +3,7 @@
  (public_name isla-lang)
  (flags (:standard -warn-error -A -w -27 -w -26))
  (modules (:standard \ main))
+ (synopsis "A Ocaml library to parse print and manipulate trace from the isla symbolic evaluator")
  (libraries pprint))
 
 (executable
@@ -12,6 +13,12 @@
  (flags (:standard -warn-error -A -w -27 -w -26))
  (modules main)
  (libraries pprint isla_lang))
+
+(coq.theory
+ (name isla_lang)
+ (package coq-isla-lang)
+ (modules lang traces litmus)
+ (synopsis "A Coq library to manipulate traces from the isla symbolic evaluator"))
 
 (rule
  (targets isla_lang_parser.mly isla_lang_parser_pp.ml isla_lang_lexer.mll
