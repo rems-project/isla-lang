@@ -51,7 +51,7 @@
 
 % Ott grammar for the symbolic output of isla-footprint, based on the Rust isla-lib/srf/smt.rs types
 
-% Warning: section delimited by "%%%%% NAME %%%%%" are used by non-ott tools to split the file
+% Warning: sections delimited by "%%%%% NAME %%%%%" are used by non-ott tools to split the file
 % in dependent projects like read-dwarf. If you change them, check dependent project still build
 % In particular, all sections must be able to be independent ott files.
 
@@ -62,6 +62,7 @@ From Coq Require Export String.
 From stdpp.unstable Require Export bitvector.
 
 Definition var_name : Set := Z.
+Bind Scope Z_scope with var_name.
 Definition eq_var_name (v w : var_name) : bool := Z.eqb v w.
 
 Definition register_name : Set := string.
@@ -334,6 +335,7 @@ exp :: '' ::=                           {{ aux _ annot }}
                                         {{ auxparam 'a }}
                                         {{ menhir-start }}
                                         {{ menhir-start-type (Isla_lang_ast.lrng) Isla_lang_ast.exp }}
+                                        {{ lex-comment ; }}
   | base_val                            :: :: Val
   | ( unop exp )                        :: :: Unop
   | ( binop exp1 exp2 )                 :: :: Binop
@@ -375,16 +377,22 @@ smt :: '' ::= {{auxparam 'a }}
 % or string.
 
 %%% TODO: JP: these are *patterns* ==> rename to avoid utter confusion?
+%%% TP: These are the shape of register values, aka the types of registers,
+%%% In trace the use case looks like a pattern, but naming it "pattern" is probably not the best
 grammar
 valu, addr, data, rkind, wkind, bkind, ckind, opcode :: 'RegVal_' ::=
  | base_val                             :: :: Base
- | (_ bvi int )                         :: :: I
+ | (_ bvi int )                         :: :: I % TODO: Does this still exists?
  | str                                  :: :: String
  | (_ unit )                            :: :: Unit
- | (_ vec valu1  ..  valuk  )           :: :: Vector  % TODO: fix syntax
- | (_ list valu1 .. valuk )             :: :: List  % TODO: fix syntax
-%%% TODO: MS: The coq version of this is wrong. Ott generates list register_name * valu
-%%%  but it should be list (register_name * valu)
+ | (_ vec valu1 .. valuk  )             :: :: Vector
+ | (_ vec nil  )                        :: :: VectorNil
+                                              {{ quotient-remove }}
+                                              {{ ocaml RegVal_Vector [] }}
+ | (_ list valu1 .. valuk )             :: :: List
+ | (_ list nil  )                       :: :: ListNil
+                                              {{ quotient-remove }}
+                                              {{ ocaml RegVal_List [] }}
  | (_ struct  selem1 .. selemk )        :: :: Struct
  | ( name valu )                        :: :: Constructor
  | (_ poison )                          :: :: Poison
@@ -392,7 +400,7 @@ valu, addr, data, rkind, wkind, bkind, ckind, opcode :: 'RegVal_' ::=
 % structure element constructor: pair of field name and value
 selem :: '' ::=                         {{ phantom }}
                                         {{ ocaml string * valu }}
-					{{ coq (register_name * valu) }}
+                                        {{ coq (register_name * valu) }}
                                         {{ pp se = let (n,v) = se in
                                                    parens (pp_name n ^^ blank 1 ^^ pp_valu v) }}
                                         {{ pp-raw se = let (n,v) = se in
@@ -440,6 +448,8 @@ event :: '' ::=  {{ aux _ annot }} {{auxparam 'a }}
   |  ( sleeping vvar )                                                          :: :: Sleeping {{ com Arm sleeping predicate }}
   |  ( wake-request )                                                           :: :: WakeRequest {{ com Arm wake request }}
   |  ( sleep-request )                                                          :: :: SleepRequest {{ com Arm sleep request }}
+  |  ( call name )                                                              :: :: Call {{ com Calls an abstract function }}
+  |  ( return name )                                                            :: :: Return {{ com Returns from an abstract function }}
   |  ( assume-reg name accessor_list valu )                                     :: :: AssumeReg {{ com Notes a register assumption that Isla has been configured to use }}
   |  ( assume a_exp )                                                           :: :: Assume {{ com Notes a constraint that Isla has been configured to assume }}
   |  ( function-assumption name valu arg_list )                                 :: :: FunAssume {{ com Notes that the user has supplied a precondition for a particular function }}
@@ -479,7 +489,7 @@ trcs :: '' ::=                {{ menhir-start }}
 grammar
 
 maybe_fork :: '' ::=                                                            {{ auxparam 'a }}
- | (cases str tree_trc1 .. tree_trck )                                    :: :: Cases
+ | (cases str tree_trc1 .. tree_trck )                                          :: :: Cases
  |                                                                              :: :: End
 
 tree_trc :: '' ::=                                                              {{ menhir-start }}
@@ -501,10 +511,13 @@ single base_val vvar :: subst_val
 embed
 {{ coq
 
+(* TODO move this to traces.v when nobody depends on this file as-is *)
+
 Notation RVal_Symbolic b := (RegVal_Base (Val_Symbolic b)).
 Notation RVal_Bool b := (RegVal_Base (Val_Bool b)).
 Notation RVal_Bits b := (RegVal_Base (Val_Bits b)).
 Notation RVal_Enum b := (RegVal_Base (Val_Enum b)).
+
 Definition base_val_to_exp (v : base_val) : exp := Val v Mk_annot.
 Coercion base_val_to_exp : base_val >-> exp.
 
