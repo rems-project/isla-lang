@@ -20,7 +20,7 @@ Note that the previous command will install the last committed changes only,
 and thus not include (staged or unstaged) local changes. You need to use the
 `-w` option if you want to pin the repo with all the local changes.
 
-To only install the project's dependencies only, run the following command
+To only install the project's dependencies, run the following command
 from your local clone of the repository:
 ```sh
 opam install --deps-only ./isla-lang.opam

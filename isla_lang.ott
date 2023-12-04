@@ -338,10 +338,9 @@ smt :: '' ::= {{auxparam 'a }}
   | ( declare-const vvar ty )           :: :: DeclareConst
   | ( define-const vvar exp )           :: :: DefineConst
   | ( assert exp )                      :: :: Assert
-     % (define-enum n) is a sugar for
-     % (declare-datatypes () ((Enum_n en_0 en_1 ... en_(n-1) ))) but
-     % it can appear multiple times and the type must be declared only once
-  |  ( define-enum name int ( name1 .. namej ) )         :: :: DefineEnum
+    % ( define-enum name int ( name1 .. namej ) ) defines a new enumerate type called `name`
+    % containing `int` different constructors: `name1`, ..., `namej`.
+  | ( define-enum name int ( name1 .. namej ) )         :: :: DefineEnum
 
 
 
