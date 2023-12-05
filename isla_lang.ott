@@ -65,13 +65,7 @@ Definition var_name : Set := Z.
 Bind Scope Z_scope with var_name.
 Definition eq_var_name (v w : var_name) : bool := Z.eqb v w.
 
-Definition register_name : Set := string.
-
-Inductive enum_id : Type :=
-| Mk_enum_id : nat -> enum_id.
-
-Inductive enum_ctor : Type :=
-| Mk_enum_ctor : nat -> enum_ctor.
+Definition sail_name : Set := string.
 
 Inductive annot : Type :=
 | Mk_annot : annot.
@@ -94,31 +88,12 @@ metavar vvar ::=    {{ ocaml int }}
 % register and field names, lexed with surrounding | | but represented without
 % (do we want to represent these as strings, or as indices into a symbol table?  the former is simpler for now)
 metavar name ::=    {{ ocaml string }}
-                    {{ coq register_name }}
+                    {{ coq sail_name }}
                     {{ phantom }}
                     {{ lex alphanum }}
                     {{ ocamllex '|'[^'|''\\']+'|' }}
                     {{ ocamllex-of-string (function s -> String.sub s 1 (String.length s -2)) }}
                     {{ pp x = !^(Printf.sprintf "|%s|" x) }}
-
-% enum type names of the form Enum  (can we later add the Sail string?)
-metavar enum_ty ::= {{ ocaml int  }}
-                    {{ coq enum_id }}
-                    {{ phantom }}
-                    {{ lex alphanum }}
-                    {{ ocamllex 'E''n''u''m'['0'-'9']+ }}
-                    {{ ocamllex-of-string (function s -> Scanf.sscanf s "Enum%d" Fun.id) }}
-                    {{ pp-raw x = !^(Printf.sprintf "Enum(%d)" x) }}
-                    {{ pp x = !^(Printf.sprintf "Enum%d" x) }}
-
-% enum names of the form en_m   (can we later add the Sail string?)
-metavar enum ::=    {{ ocaml int * int }}
-                    {{ coq (enum_id*enum_ctor) }}
-                    {{ lex alphanum }}
-                    {{ ocamllex 'e'['0'-'9']+'_'['0'-'9']+ }}
-                    {{ ocamllex-of-string (function s -> Scanf.sscanf s "e%[0-9]_%[0-9]" (fun a b -> (int_of_string a, int_of_string b))) }}
-                    {{ pp-raw x = let (a,b) = x in !^(Printf.sprintf "%d/%d" b a) }}
-                    {{ pp x = let (a,b) = x in !^(Printf.sprintf "e%d_%d" a b) }}
 
 % natural numbers
 metavar nat, num_bytes ::=     {{ ocaml int }}
@@ -233,7 +208,7 @@ grammar
 ty :: 'Ty_' ::=
   | Bool                                :: :: Bool
   | (_ BitVec nat )                     :: :: BitVec
-  | enum_ty                             :: :: Enum
+  | name                                :: :: Enum
   | ( Array ty1 ty2 )                   :: :: Array
 
 
@@ -319,7 +294,7 @@ base_val :: 'Val_' ::=
  | vvar                                 :: :: Symbolic
  | bool                                 :: :: Bool
  | bv                                   :: :: Bits
- | enum                                 :: :: Enum
+ | name                                 :: :: Enum
 
 % Version with register names for assumptions
 grammar
@@ -327,7 +302,7 @@ assume_val :: 'AVal_' ::=
  | ( name accessor_list )               :: :: Var
  | bool                                 :: :: Bool
  | bv                                   :: :: Bits
- | enum                                 :: :: Enum
+ | name                                 :: :: Enum
 
 %%%%% exp %%%%%
 grammar
@@ -363,10 +338,9 @@ smt :: '' ::= {{auxparam 'a }}
   | ( declare-const vvar ty )           :: :: DeclareConst
   | ( define-const vvar exp )           :: :: DefineConst
   | ( assert exp )                      :: :: Assert
-     % (define-enum n) is a sugar for
-     % (declare-datatypes () ((Enum_n en_0 en_1 ... en_(n-1) ))) but
-     % it can appear multiple times and the type must be declared only once
-  |  ( define-enum int )                :: :: DefineEnum
+    % ( define-enum name int ( name1 .. namej ) ) defines a new enumerate type called `name`
+    % containing `int` different constructors: `name1`, ..., `namej`.
+  | ( define-enum name int ( name1 .. namej ) )         :: :: DefineEnum
 
 
 
@@ -400,7 +374,7 @@ valu, addr, data, rkind, wkind, bkind, ckind, opcode :: 'RegVal_' ::=
 % structure element constructor: pair of field name and value
 selem :: '' ::=                         {{ phantom }}
                                         {{ ocaml string * valu }}
-                                        {{ coq (register_name * valu) }}
+                                        {{ coq (sail_name * valu) }}
                                         {{ pp se = let (n,v) = se in
                                                    parens (pp_name n ^^ blank 1 ^^ pp_valu v) }}
                                         {{ pp-raw se = let (n,v) = se in
@@ -437,7 +411,7 @@ event :: '' ::=  {{ aux _ annot }} {{auxparam 'a }}
   |  ( read-reg name accessor_list valu )                                       :: :: ReadReg {{ com read value `valu` from register `name` }}
   |  ( write-reg name accessor_list valu )                                      :: :: WriteReg {{ com write value `valu` to register `name` }}
   |  ( read-mem valu rkind addr num_bytes tag_value )                                 :: :: ReadMem {{ com read value `valu` from memory address `addr`, with read kind `rkind`, byte width `byte\_width`, and `tag\_value` is the optional capability tag }}
-  |  ( write-mem valu wkind addr data num_bytes tag_value )                           :: :: WriteMem {{ com write value `valu` to memory address `addr`, with write kind `wkind`, byte width `byte\_width`, `tag\_value` is the optional capability tag, and success flag `vvar` }}
+  |  ( write-mem valu wkind addr data num_bytes tag_value )                     :: :: WriteMem {{ com write value `valu` to memory address `addr`, with write kind `wkind`, byte width `num\_bytes`, `tag\_value` is the optional capability tag, and success flag `vvar` }}
   |  ( branch-address addr )                                                    :: :: BranchAddress {{ com announce branch address `addr`, to induce ctrl dependency in the concurrency model }}
   |  ( barrier bkind )                                                          :: :: Barrier {{ com memory barrier of kind `bkind` }}
   |  ( cache-op ckind addr )                                                    :: :: CacheOp {{ com cache maintenance effect of kind `ckind`, at address `addr`, for data-cache clean etc. }}
