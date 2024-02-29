@@ -119,11 +119,12 @@ metavar bvi ::=     {{ ocaml int }}
 % bitvector literal
 % for Coq, leave as string for now so see in Coq what you see in the
 % trace; later turn into whatever choice of bitvector repr type
+% zero-length is allowed (e.g., for tag-only memory writes)
 metavar bv ::=      {{ ocaml string }}
                     {{ coq bvn }}
                     {{ phantom }}
                     {{ lex numeric }}
-                    {{ ocamllex ('#''b'['0'-'1']+)|('#''x'['0'-'9''a'-'f''A'-'F']+) }}
+                    {{ ocamllex ('#''b'['0'-'1']*)|('#''x'['0'-'9''a'-'f''A'-'F']*) }}
                     {{ pp x = string (x) }}
                     {{ pp-raw x = string (x) }}
 
