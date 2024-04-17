@@ -29,7 +29,7 @@
    (run ott -show_sort false -quotient_rules false -aux_style_rules false -i
      isla_lang.ott -o isla_lang_parser.mly -o isla_lang_lexer.mll -o
      isla_lang_ast.ml -o isla_lang.v)
-   (run sed -i -f fix-substs.sed isla_lang_ast.ml isla_lang.v))))
+   (run sed -i.bak -f fix-substs.sed isla_lang_ast.ml isla_lang.v))))
 
 (rule
  (target ott.path)
