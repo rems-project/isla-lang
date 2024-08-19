@@ -59,7 +59,7 @@
 embed {{ coq
 (*REAL_START*)
 From Coq Require Export String.
-From stdpp.unstable Require Export bitvector.
+From stdpp.bitvector Require Export definitions.
 
 Definition var_name : Set := Z.
 Bind Scope Z_scope with var_name.

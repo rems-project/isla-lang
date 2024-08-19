@@ -24,5 +24,5 @@
  (depends
   (coq (>= 8.13))
   (coq-stdpp (= dev))
-  (coq-stdpp-unstable (= dev))
+  (coq-stdpp-bitvector (= dev))
   (ott (and (>= 0.33) :build))))
