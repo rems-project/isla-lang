@@ -67,7 +67,7 @@ Definition eq_var_name (v w : var_name) : bool := Z.eqb v w.
 
 Definition sail_name : Set := string.
 
-Inductive annot : Type :=
+Inductive annot : Set :=
 | Mk_annot : annot.
 }}
 
